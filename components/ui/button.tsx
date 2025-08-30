@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md" | "lg"
-  variant?: "default" | "outline"
+  variant?: "default" | "outline" | "ghost"
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -15,6 +15,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: "w-28 p-1.5 text-sm",
       md: "w-32 p-2 text-base",
       lg: "w-36 p-2.5 text-lg"
+    }
+
+    if (variant === "ghost") {
+      return (
+        <button
+          ref={ref}
+          className={cn(
+            "cursor-pointer rounded-md bg-transparent text-center font-medium transition-all hover:bg-accent hover:text-accent-foreground",
+            sizeClasses[size],
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </button>
+      )
     }
 
     if (variant === "outline") {

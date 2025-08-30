@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
+import { InlineEditorProvider } from "@/contexts/inline-editor-context"
 import "./globals.css"
 
 // ✏️ 여기를 수정하세요
@@ -31,7 +32,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <InlineEditorProvider>
+            {children}
+          </InlineEditorProvider>
         </ThemeProvider>
       </body>
     </html>

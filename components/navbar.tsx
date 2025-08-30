@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import Link from "next/link"
-import { LucideIcon } from "lucide-react"
+import { LucideIcon, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -17,9 +16,11 @@ interface NavBarProps {
   className?: string
   logo?: string
   logoImage?: string
+  isEditMode?: boolean
+  onEditMenu?: () => void
 }
 
-export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
+export function NavBar({ items, className, logo, logoImage, isEditMode, onEditMenu }: NavBarProps) {
   // ==================== 🎨 네비게이션 바 커스텀 가이드 🎨 ====================
   // 
   // 이 컴포넌트는 header.tsx에서 설정합니다!
@@ -34,17 +35,7 @@ export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
   // ==================================================================
   
   const [activeTab, setActiveTab] = useState(items[0]?.name || '')
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+  // Removed isMobile state as it was unused
 
   // Scroll detection for active section
   useEffect(() => {
@@ -76,7 +67,11 @@ export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
   const scrollToSection = (url: string) => {
     const element = document.querySelector(url)
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
+      const offsetTop = element.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({
+        top: offsetTop - 80, // 네비게이션 바 높이만큼 오프셋
+        behavior: "smooth"
+      })
     }
   }
 
@@ -131,6 +126,17 @@ export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
         {items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name
+          
+          // Icon이 유효한 컴포넌트인지 확인 (function 또는 forwardRef)
+          const isValidIcon = Icon && (
+            typeof Icon === 'function' || 
+            (typeof Icon === 'object' && Icon !== null && '$$typeof' in Icon && (Icon as React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>).$$typeof === Symbol.for('react.forward_ref'))
+          )
+          
+          if (!isValidIcon) {
+            console.error('Invalid icon for item:', item.name, Icon)
+            return null
+          }
 
           return (
             <button
@@ -162,10 +168,9 @@ export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
                   className="absolute inset-0 w-full bg-primary/5 rounded-full -z-10"
                   initial={false}
                   transition={{
-                    // 스프링 애니메이션 설정
                     type: "spring",
-                    stiffness: 300,  // 탄성 (높을수록 빠름)
-                    damping: 30,     // 감쇠 (높을수록 부드러움)
+                    stiffness: 300,
+                    damping: 30,
                   }}
                 >
                   {/* 상단 램프 효과 (빛나는 효과) */}
@@ -180,6 +185,17 @@ export function NavBar({ items, className, logo, logoImage }: NavBarProps) {
             </button>
           )
         })}
+        
+        {/* Edit Button */}
+        {isEditMode && onEditMenu && (
+          <button
+            onClick={onEditMenu}
+            className="p-2 rounded-full hover:bg-muted transition-colors"
+            title="메뉴 편집"
+          >
+            <Settings className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   )

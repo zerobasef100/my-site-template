@@ -1,149 +1,126 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { X } from "lucide-react"
+import * as React from "react"
+import { useState, useEffect } from "react"
+import { X, Plus, Upload, ChevronDown, LayoutGrid } from "lucide-react"
+import { EditableText } from "@/components/editable/editable-text"
+import { EditableMedia } from "@/components/editable/editable-media"
+import { EditableBackground } from "@/components/editable/editable-background"
+import { useInlineEditor } from "@/contexts/inline-editor-context"
+import { COMMON_STYLES } from "@/lib/constants"
 
 export function Projects() {
-  // ==================== 🎨 수정 가이드 시작 🎨 ====================
-  // 
-  // 이 부분만 수정하시면 됩니다! 코드는 건드리지 마세요.
-  // 
-  // 📌 이미지 추가한 만큼 자동으로 섹션이 늘어납니다
-  // 📌 이미지 파일은 반드시 public 폴더에 넣으세요
-  // 📌 모바일: 1열, 태블릿: 2열, PC: 3열 자동 배치
-  // 
-  // ==================================================================
-
-  const projectsInfo = {
+  const { getData, saveData, isEditMode } = useInlineEditor()
+  // 기본 데이터
+  const defaultInfo = {
     // 📝 섹션 제목과 설명
     title: "프로젝트",
-    subtitle: "다양한 프로젝트들을 소개합니다",
+    subtitle: "당신이 진행한 프로젝트들을 소개해주세요",
     
-    // 🖼️ 프로젝트 목록 - 최대 20개까지 추가 가능!
-    // 
-    // 📌 사용법:
-    // 1. public 폴더에 이미지 파일 넣기 (project1.jpg, project2.jpg...)
-    // 2. 아래 정보 입력 (이미지 없으면 자동으로 숨김)
-    // 3. 빈 문자열("") 남겨두면 해당 프로젝트 표시 안 됨
-    // 
-    // ⚠️ 이미지 경로는 반드시 "/" 시작!
+    // 더보기 설정
+    initialDisplay: 6,  // 처음에 보여줄 프로젝트 개수
+    loadMoreCount: 3,   // 더보기 클릭 시 추가로 보여줄 개수
+    
+    // 🖼️ 프로젝트 목록
     projects: [
       {
-        image: "/project1.jpg",  // 이미지 파일 경로
-        title: "브랜드 리뉴얼 프로젝트",  // 프로젝트 제목
-        description: "스타트업 A사의 전체 브랜딩 리뉴얼"  // 설명
-      },
-      {
-        image: "/project2.jpg",
-        title: "SNS 캠페인",
-        description: "바이럴 마케팅 캠페인 기획 및 실행"
-      },
-      {
-        image: "/project3.jpg",
-        title: "제품 런칭",
-        description: "글로벌 시장 진출을 위한 제품 런칭"
-      },
-      {
-        image: "/project4.jpg",
-        title: "콘텐츠 마케팅",
-        description: "유튜브 & 인스타그램 콘텐츠 제작"
-      },
-      {
-        image: "/project5.jpg",
-        title: "이벤트 기획",
-        description: "오프라인 팝업스토어 기획 및 운영"
-      },
-      {
-        image: "/project6.jpg",
-        title: "디지털 광고",
-        description: "퍼포먼스 마케팅 캠페인 운영"
-      },
-      // ===== 7번부터는 필요한 것만 채우세요 =====
-      {
-        image: "",  // 비우면 표시 안 됨
-        title: "",
-        description: ""
+        image: "",  // 이미지 파일 경로 (public 폴더에 이미지 넣고 "/이미지명.jpg" 형식으로 입력)
+        title: "프로젝트명 1",  // 프로젝트 제목
+        description: "프로젝트에 대한 간단한 설명"  // 설명
       },
       {
         image: "",
-        title: "",
-        description: ""
+        title: "프로젝트명 2",
+        description: "프로젝트에 대한 간단한 설명"
       },
       {
         image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",  // 10번
-        title: "",
-        description: ""
+        title: "프로젝트명 3",
+        description: "프로젝트에 대한 간단한 설명"
       },
       {
         image: "",
-        title: "",
-        description: ""
+        title: "프로젝트명 4",
+        description: "프로젝트에 대한 간단한 설명"
       },
       {
         image: "",
-        title: "",
-        description: ""
+        title: "프로젝트명 5",
+        description: "프로젝트에 대한 간단한 설명"
       },
       {
         image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",  // 15번
-        title: "",
-        description: ""
-      },
-      {
-        image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",
-        title: "",
-        description: ""
-      },
-      {
-        image: "",  // 20번
-        title: "",
-        description: ""
+        title: "프로젝트명 6",
+        description: "프로젝트에 대한 간단한 설명"
       }
     ]
   }
 
-  // ==================== 🎨 수정 가이드 끝 🎨 ====================
-
+  const [projectsInfo, setProjectsInfo] = useState(defaultInfo)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imageAspects, setImageAspects] = useState<{ [key: string]: string }>({})
+  const [showProjectModal, setShowProjectModal] = useState(false)
+  const [displayCount, setDisplayCount] = useState(defaultInfo.initialDisplay)
+  const [showDisplaySettings, setShowDisplaySettings] = useState(false)
+  const [newProject, setNewProject] = useState({
+    image: "",
+    title: "",
+    description: ""
+  })
+  const [backgroundData, setBackgroundData] = useState({
+    image: '',
+    video: '',
+    color: '',
+    opacity: 0.1
+  })
   
-  // 실제로 표시할 프로젝트만 필터링 (이미지가 있는 것만)
-  const validProjects = projectsInfo.projects.filter(project => 
-    project.image && project.image.trim() !== ""
-  )
+  // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
+  useEffect(() => {
+    const savedData = getData('projects-info')
+    if (savedData) {
+      const mergedData = { ...defaultInfo, ...savedData }
+      setProjectsInfo(mergedData)
+      setDisplayCount(mergedData.initialDisplay || defaultInfo.initialDisplay)
+    }
+    
+    const savedBg = getData('projects-background') as { image: string; video: string; color: string; opacity: number } | null
+    if (savedBg) {
+      setBackgroundData(savedBg)
+    }
+  }, [isEditMode]) // isEditMode가 변경될 때마다 데이터 다시 로드
+  
+  const updateProjectsInfo = (key: string, value: string | number | boolean | typeof projectsInfo.projects) => {
+    const newInfo = { ...projectsInfo, [key]: value }
+    setProjectsInfo(newInfo)
+    saveData('projects-info', newInfo)
+  }
+  
+  const updateProject = (index: number, field: string, value: string) => {
+    const newProjects = [...projectsInfo.projects]
+    newProjects[index] = { ...newProjects[index], [field]: value }
+    updateProjectsInfo('projects', newProjects)
+  }
+  
+  
+  const removeProject = (index: number) => {
+    const newProjects = projectsInfo.projects.filter((_, i) => i !== index)
+    updateProjectsInfo('projects', newProjects)
+  }
+  
+  // 표시할 프로젝트들
+  const validProjects = projectsInfo.projects
+  const visibleProjects = isEditMode ? validProjects : validProjects.slice(0, displayCount)
+  const hasMoreProjects = validProjects.length > displayCount
+  
+  // 더보기 버튼 클릭
+  const loadMore = () => {
+    setDisplayCount(prev => Math.min(prev + projectsInfo.loadMoreCount, validProjects.length))
+  }
   
   // 이미지 비율 감지 함수
   const detectImageAspect = (src: string) => {
+    if (!src) return // 빈 이미지 경로는 무시
+    
     const img = new Image()
     img.onload = () => {
       const ratio = img.width / img.height
@@ -202,72 +179,143 @@ export function Projects() {
 
   return (
     <>
-      <section id="projects" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* 섹션 제목 - projectsInfo에서 수정 */}
+      <EditableBackground
+        image={backgroundData.image}
+        video={backgroundData.video}
+        color={backgroundData.color}
+        opacity={backgroundData.opacity}
+        onChange={(data) => setBackgroundData(prev => ({ ...prev, ...data }))}
+        storageKey="projects-background"
+        className="relative"
+      >
+        <section id="projects" className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* 섹션 제목 */}
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              {projectsInfo.title}
+              <EditableText
+                value={projectsInfo.title}
+                onChange={(value) => updateProjectsInfo('title', value)}
+                storageKey="projects-title"
+              />
             </h2>
-            {projectsInfo.subtitle && (
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                {projectsInfo.subtitle}
-              </p>
-            )}
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <EditableText
+                value={projectsInfo.subtitle}
+                onChange={(value) => updateProjectsInfo('subtitle', value)}
+                storageKey="projects-subtitle"
+              />
+            </p>
           </div>
 
           {/* 프로젝트가 없을 때 */}
-          {validProjects.length === 0 ? (
+          {validProjects.length === 0 && !isEditMode ? (
             <div className="text-center py-20">
               <span className="text-6xl block mb-4">🚀</span>
               <p className="text-xl text-muted-foreground">준비 중입니다</p>
             </div>
           ) : (
-            /* 프로젝트 그리드 - 모바일 1열, 태블릿 2열, PC 3열 고정 */
+            /* 프로젝트 그리드 */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {validProjects.map((project, index) => (
-                <div 
-                  key={index}
-                  className="group cursor-pointer flex flex-col"
-                  onClick={() => setSelectedImage(project.image)}
-                >
-                  {/* 이미지 영역 - 고정 높이 컨테이너 */}
-                  <div className="h-64 overflow-hidden rounded-lg bg-muted mb-3">
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                          const target = e.currentTarget
-                          target.style.display = 'none'
-                          const parent = target.parentElement
-                          if (parent) {
-                            const placeholder = document.createElement('div')
-                            placeholder.className = 'w-full h-full bg-muted flex items-center justify-center'
-                            placeholder.innerHTML = '<span class="text-5xl">📁</span>'
-                            parent.appendChild(placeholder)
-                          }
+              {visibleProjects.map((project, index) => {
+                
+                return (
+                  <div 
+                    key={index}
+                    className="group flex flex-col relative cursor-pointer"
+                    onClick={() => !isEditMode && setSelectedImage(project.image)}
+                  >
+                    {isEditMode && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeProject(index)
                         }}
+                        className={COMMON_STYLES.deleteButton}
+                      >
+                        <X className={COMMON_STYLES.deleteIcon} />
+                      </button>
+                    )}
+                    
+                    {/* 이미지 영역 */}
+                    <div className="h-64 overflow-hidden rounded-lg bg-muted mb-3">
+                      <EditableMedia
+                        src={project.image || ""}
+                        onChange={(src) => updateProject(index, 'image', src)}
+                        type="auto"
+                        storageKey={`project-${index}-image`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        alt={project.title}
+                        purpose={`project-${index}`}
+                        allowVideo={true}
                       />
                     </div>
+                    
+                    {/* 텍스트 영역 */}
+                    <div className="flex-grow">
+                      <h3 className="font-semibold text-foreground mb-1">
+                        <EditableText
+                          value={project.title || "프로젝트 제목"}
+                          onChange={(value) => updateProject(index, 'title', value)}
+                          storageKey={`project-${index}-title`}
+                        />
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        <EditableText
+                          value={project.description || "프로젝트 설명"}
+                          onChange={(value) => updateProject(index, 'description', value)}
+                          storageKey={`project-${index}-description`}
+                          multiline
+                        />
+                      </p>
+                    </div>
                   </div>
-                  
-                  {/* 텍스트 영역 - 짧고 간단하게 */}
-                  <div className="flex-grow">
-                    <h3 className="font-semibold text-foreground mb-1">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {project.description}
-                    </p>
+                )
+              })}
+              
+              {/* 편집 버튼 */}
+              {isEditMode && (
+                <div 
+                  className="h-64 border-2 border-dashed border-muted-foreground/30 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all"
+                  onClick={() => setShowProjectModal(true)}
+                >
+                  <div className="text-center">
+                    <Plus className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">프로젝트 추가</p>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
-        </div>
-      </section>
+          
+          {/* 더보기 버튼 */}
+          {hasMoreProjects && !isEditMode && (
+            <div className="text-center mt-8">
+              <button
+                onClick={loadMore}
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all inline-flex items-center gap-2"
+              >
+                <ChevronDown className="h-5 w-5" />
+                더 많은 프로젝트 보기 ({validProjects.length - displayCount}개 더)
+              </button>
+            </div>
+          )}
+          
+          {/* 표시 설정 버튼 (편집 모드에서만) */}
+          {isEditMode && (
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setShowDisplaySettings(true)}
+                className="px-6 py-3 bg-muted hover:bg-muted/80 rounded-lg transition-all inline-flex items-center gap-2"
+              >
+                <LayoutGrid className="h-5 w-5" />
+                더보기 설정
+              </button>
+            </div>
+          )}
+          </div>
+        </section>
+      </EditableBackground>
 
       {/* 이미지 확대 모달 */}
       {selectedImage && (
@@ -289,24 +337,334 @@ export function Projects() {
               <X className="w-5 h-5 text-foreground" />
             </button>
 
-            {/* 확대된 이미지 */}
+            {/* 확대된 이미지/비디오 */}
             <div className="relative w-full h-full flex items-center justify-center p-4">
-              <img
-                src={selectedImage}
-                alt="확대된 프로젝트 이미지"
-                className="max-w-full max-h-[75vh] object-contain rounded"
-                onError={(e) => {
-                  const target = e.currentTarget
-                  target.style.display = 'none'
-                  const parent = target.parentElement
-                  if (parent) {
-                    const placeholder = document.createElement('div')
-                    placeholder.className = 'text-muted-foreground text-center py-20'
-                    placeholder.innerHTML = '<span class="text-6xl">📁</span><p class="mt-4">이미지를 불러올 수 없습니다</p>'
-                    parent.appendChild(placeholder)
+              {selectedImage && (selectedImage.includes('.mp4') || selectedImage.includes('.webm') || selectedImage.includes('youtube')) ? (
+                <video
+                  src={selectedImage}
+                  className="max-w-full max-h-[75vh] object-contain rounded"
+                  controls
+                  autoPlay
+                  loop
+                />
+              ) : (
+                <img
+                  src={selectedImage}
+                  alt="확대된 프로젝트 이미지"
+                  className="max-w-full max-h-[75vh] object-contain rounded"
+                  onError={(e) => {
+                    const target = e.currentTarget
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent) {
+                      const placeholder = document.createElement('div')
+                      placeholder.className = 'text-muted-foreground text-center py-20'
+                      placeholder.innerHTML = '<span class="text-6xl">📁</span><p class="mt-4">미디어를 불러올 수 없습니다</p>'
+                      parent.appendChild(placeholder)
+                    }
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 프로젝트 추가 모달 */}
+      {showProjectModal && isEditMode && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+          <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">새 프로젝트 추가</h3>
+              <button
+                onClick={() => setShowProjectModal(false)}
+                className="p-1 hover:bg-muted rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* 이미지/비디오 업로드 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">프로젝트 이미지/비디오</label>
+                <div className="h-48 rounded-lg overflow-hidden bg-muted">
+                  {newProject.image ? (
+                    <div className="relative h-full">
+                      {newProject.image.includes('.mp4') || newProject.image.includes('.webm') ? (
+                        <video 
+                          src={newProject.image} 
+                          className="w-full h-full object-cover"
+                          autoPlay 
+                          loop 
+                          muted 
+                          playsInline
+                        />
+                      ) : (
+                        <img 
+                          src={newProject.image} 
+                          alt="프로젝트 미리보기"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <button
+                        onClick={() => setNewProject({...newProject, image: ""})}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center gap-2">
+                      <input
+                        id="project-upload"
+                        type="file"
+                        accept="image/*,video/mp4,video/webm"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          
+                          const isVideo = file.type.includes('video')
+                          const maxSize = isVideo ? 20 * 1024 * 1024 : 5 * 1024 * 1024
+                          
+                          if (file.size > maxSize) {
+                            alert(`파일 크기는 ${isVideo ? '20MB' : '5MB'} 이하여야 합니다`)
+                            return
+                          }
+                          
+                          const formData = new FormData()
+                          formData.append('file', file)
+                          formData.append('purpose', `project-${Date.now()}`)
+                          
+                          try {
+                            const response = await fetch(isVideo ? '/api/upload-video' : '/api/upload-image', {
+                              method: 'POST',
+                              body: formData
+                            })
+                            
+                            const result = await response.json()
+                            
+                            if (result.success) {
+                              setNewProject({...newProject, image: result.path})
+                            } else {
+                              alert(`❌ ${result.error}`)
+                            }
+                          } catch {
+                            alert('업로드 중 오류가 발생했습니다')
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="project-upload"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 cursor-pointer"
+                      >
+                        <Upload className="h-4 w-4 inline mr-2" />
+                        파일 업로드
+                      </label>
+                      <input
+                        type="text"
+                        value={newProject.image}
+                        onChange={(e) => setNewProject({...newProject, image: e.target.value})}
+                        placeholder="또는 URL 입력 (https://...)"
+                        className="px-3 py-2 border rounded-lg bg-background text-sm"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* 프로젝트 제목 */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">프로젝트 제목</label>
+                <input
+                  type="text"
+                  value={newProject.title}
+                  onChange={(e) => setNewProject({...newProject, title: e.target.value})}
+                  placeholder="예: 브랜드 리뉴얼 프로젝트"
+                  className="w-full px-3 py-2 border rounded-lg bg-background"
+                />
+              </div>
+              
+              {/* 프로젝트 설명 */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">프로젝트 설명</label>
+                <textarea
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({...newProject, description: e.target.value})}
+                  placeholder="예: 스타트업 A사의 전체 브랜딩 리뉴얼 및 UI/UX 개선"
+                  className="w-full px-3 py-2 border rounded-lg bg-background resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="mt-6 flex gap-2">
+              <button
+                onClick={() => {
+                  if (newProject.title && newProject.description) {
+                    const updatedProjects = [...projectsInfo.projects, newProject]
+                    setProjectsInfo({...projectsInfo, projects: updatedProjects})
+                    saveData('projects-info', {...projectsInfo, projects: updatedProjects})
+                    setNewProject({ image: "", title: "", description: "" })
+                    setShowProjectModal(false)
+                  } else {
+                    alert('제목과 설명을 입력해주세요')
                   }
                 }}
-              />
+                className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                추가
+              </button>
+              <button
+                onClick={() => {
+                  setNewProject({ image: "", title: "", description: "" })
+                  setShowProjectModal(false)
+                }}
+                className="flex-1 py-2 border rounded-lg hover:bg-muted"
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 표시 설정 모달 */}
+      {showDisplaySettings && isEditMode && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <div className="bg-background border rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">더보기 설정</h3>
+              <button
+                onClick={() => setShowDisplaySettings(false)}
+                className="p-1 hover:bg-muted rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* 초기 표시 개수 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  처음에 보여줄 프로젝트 개수
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[3, 6, 9, 12].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => {
+                        updateProjectsInfo('initialDisplay', num)
+                        setDisplayCount(Math.min(displayCount, num))
+                      }}
+                      className={`py-2 px-3 rounded-lg border transition-all ${
+                        projectsInfo.initialDisplay === num 
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'hover:bg-muted'
+                      }`}
+                    >
+                      {num}개
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-2">
+                  <input
+                    type="number"
+                    value={projectsInfo.initialDisplay}
+                    onChange={(e) => {
+                      const value = Math.max(1, parseInt(e.target.value) || 1)
+                      updateProjectsInfo('initialDisplay', value)
+                      setDisplayCount(Math.min(displayCount, value))
+                    }}
+                    min="1"
+                    max="100"
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="직접 입력 (1-100)"
+                  />
+                </div>
+              </div>
+              
+              {/* 더보기 클릭 시 추가 개수 */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  더보기 클릭 시 추가로 보여줄 개수
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[3, 6, 9, 12].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => updateProjectsInfo('loadMoreCount', num)}
+                      className={`py-2 px-3 rounded-lg border transition-all ${
+                        projectsInfo.loadMoreCount === num 
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'hover:bg-muted'
+                      }`}
+                    >
+                      {num}개
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-2">
+                  <input
+                    type="number"
+                    value={projectsInfo.loadMoreCount}
+                    onChange={(e) => {
+                      const value = Math.max(1, parseInt(e.target.value) || 1)
+                      updateProjectsInfo('loadMoreCount', value)
+                    }}
+                    min="1"
+                    max="100"
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="직접 입력 (1-100)"
+                  />
+                </div>
+              </div>
+              
+              {/* 현재 상태 미리보기 */}
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <p className="text-sm font-medium mb-2">현재 설정:</p>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>• 전체 프로젝트: {validProjects.length}개</p>
+                  <p>• 처음 표시: {projectsInfo.initialDisplay}개</p>
+                  <p>• 더보기 클릭당: {projectsInfo.loadMoreCount}개씩 추가</p>
+                  {validProjects.length > projectsInfo.initialDisplay && (
+                    <p className="text-primary mt-2">
+                      → 더보기 버튼 {Math.ceil((validProjects.length - projectsInfo.initialDisplay) / projectsInfo.loadMoreCount)}번 클릭 필요
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              {/* 팁 */}
+              <div className="p-4 bg-primary/10 rounded-lg">
+                <p className="text-xs font-medium mb-1">💡 추천 설정:</p>
+                <p className="text-xs text-muted-foreground">
+                  • 프로젝트가 많은 경우: 6개 표시, 3개씩 추가<br/>
+                  • 프로젝트가 적은 경우: 3개 표시, 3개씩 추가<br/>
+                  • 모바일 고려: 3의 배수로 설정 권장
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => {
+                  // 초기화
+                  updateProjectsInfo('initialDisplay', 6)
+                  updateProjectsInfo('loadMoreCount', 3)
+                  setDisplayCount(6)
+                }}
+                className="flex-1 py-2 border rounded-lg hover:bg-muted"
+              >
+                기본값으로 초기화
+              </button>
+              <button
+                onClick={() => setShowDisplaySettings(false)}
+                className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                완료
+              </button>
             </div>
           </div>
         </div>
