@@ -238,13 +238,13 @@ export function Projects() {
                     )}
                     
                     {/* 이미지 영역 */}
-                    <div className="h-64 overflow-hidden rounded-lg bg-muted mb-3">
+                    <div className="relative h-64 rounded-lg bg-muted mb-3 overflow-hidden">
                       <EditableMedia
                         src={project.image || ""}
                         onChange={(src) => updateProject(index, 'image', src)}
                         type="auto"
                         storageKey={`project-${index}-image`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         alt={project.title}
                         purpose={`project-${index}`}
                         allowVideo={true}

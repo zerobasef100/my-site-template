@@ -423,9 +423,9 @@ export function About() {
 
           {/* 자기소개 상세 */}
           {(aboutInfo.story.length > 0 || isEditMode) && (
-            <div className="bg-card rounded-2xl p-8 shadow-lg">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div>
+            <div className="bg-card rounded-2xl shadow-lg overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch">
+                <div className="p-8">
                   <h3 className="text-2xl font-bold text-foreground mb-4">
                     <EditableText
                       value={aboutInfo.storyTitle}
@@ -465,18 +465,16 @@ export function About() {
                 </div>
                 
                 {/* 이미지 영역 */}
-                <div className="relative">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-muted">
-                    <EditableMedia
-                      src={aboutInfo.storyImage}
-                      onChange={(src) => updateAboutInfo('storyImage', src)}
-                      type="image"
-                      storageKey="about-storyImage"
-                      className="w-full h-full object-cover"
-                      alt="소개 이미지"
-                      purpose="about-image"
-                    />
-                  </div>
+                <div className="relative w-full h-full min-h-[500px] lg:min-h-full">
+                  <EditableMedia
+                    src={aboutInfo.storyImage}
+                    onChange={(src) => updateAboutInfo('storyImage', src)}
+                    type="image"
+                    storageKey="about-storyImage"
+                    className="w-full h-full object-cover"
+                    alt="소개 이미지"
+                    purpose="about-image"
+                  />
                 </div>
               </div>
             </div>
