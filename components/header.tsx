@@ -28,7 +28,7 @@ export function Header() {
   // 기본 데이터
   const defaultConfig = {
     // 🏷️ 로고 설정
-    logo: "Portfolio",  // 로고 텍스트 (빈 문자열이면 로고 숨김)
+    logo: "나의 포트폴리오",  // 네비바 로고 텍스트 (빈 문자열이면 로고 숨김)
     logoImage: "",       // 로고 이미지 경로 (예: "/logo.png") - 사용 안하면 빈 문자열
     
     // 🎨 네비게이션 스타일
@@ -85,9 +85,20 @@ export function Header() {
   
   const [navConfig, setNavConfig] = useState(defaultConfig)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [siteTitle, setSiteTitle] = useState('나의 포트폴리오')
   
   // localStorage에서 데이터 로드
   useEffect(() => {
+    // 사이트 제목 복원
+    const savedTitle = getData('site-title') as string | null
+    if (savedTitle) {
+      setSiteTitle(savedTitle)
+      document.title = savedTitle
+    } else {
+      // 현재 document.title을 기본값으로 사용
+      setSiteTitle(document.title)
+    }
+    
     const savedData = getData('nav-config') as { 
       logo?: string; 
       logoImage?: string; 
@@ -122,6 +133,13 @@ export function Header() {
   const updateNavConfig = (key: string, value: string | boolean | typeof navConfig.items) => {
     const newConfig = { ...navConfig, [key]: value }
     setNavConfig(newConfig)
+    
+    // 사이트 제목도 함께 업데이트
+    if (key === 'siteTitle' && typeof value === 'string') {
+      setSiteTitle(value)
+      document.title = value
+      saveData('site-title', value)
+    }
     
     // 저장할 때 아이콘을 문자열로 변환
     const configToSave: { 
@@ -196,11 +214,28 @@ export function Header() {
       {showEditModal && isEditMode && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">네비게이션 메뉴 편집</h3>
+            <h3 className="text-lg font-semibold mb-4">사이트 설정</h3>
+            
+            {/* Site Title */}
+            <div className="mb-6 p-4 border rounded-lg">
+              <h4 className="font-medium mb-3">사이트 제목 설정</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-muted-foreground">브라우저 탭 제목</label>
+                  <input
+                    type="text"
+                    value={siteTitle}
+                    onChange={(e) => updateNavConfig('siteTitle', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="나의 포트폴리오"
+                  />
+                </div>
+              </div>
+            </div>
             
             {/* Logo Settings */}
             <div className="mb-6 p-4 border rounded-lg">
-              <h4 className="font-medium mb-3">로고 설정</h4>
+              <h4 className="font-medium mb-3">네비바 로고 설정</h4>
               <div className="space-y-3">
                 <div>
                   <label className="text-sm text-muted-foreground">로고 텍스트</label>
@@ -209,91 +244,30 @@ export function Header() {
                     value={navConfig.logo}
                     onChange={(e) => updateNavConfig('logo', e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg bg-background"
-                    placeholder="Portfolio"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">로고 이미지 URL</label>
-                  <input
-                    type="text"
-                    value={navConfig.logoImage}
-                    onChange={(e) => updateNavConfig('logoImage', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-background"
-                    placeholder="/logo.png"
+                    placeholder="나의 포트폴리오"
                   />
                 </div>
               </div>
             </div>
             
-            {/* Menu Items */}
+            {/* Menu Items - 홈, 소개, 프로젝트, 연락처만 이름 변경 가능 */}
             <div className="mb-6">
-              <h4 className="font-medium mb-3">메뉴 항목</h4>
+              <h4 className="font-medium mb-3">메뉴 이름 변경</h4>
               <div className="space-y-3">
-                {navConfig.items.map((item, index) => (
-                  <div key={index} className="p-3 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        type="checkbox"
-                        checked={item.show}
-                        onChange={(e) => updateMenuItem(index, 'show', e.target.checked)}
-                        className="rounded"
-                      />
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => updateMenuItem(index, 'name', e.target.value)}
-                        className="flex-1 px-2 py-1 border rounded bg-background"
-                        placeholder="메뉴 이름"
-                      />
-                      <input
-                        type="text"
-                        value={item.url}
-                        onChange={(e) => updateMenuItem(index, 'url', e.target.value)}
-                        className="flex-1 px-2 py-1 border rounded bg-background"
-                        placeholder="#section"
-                      />
-                      <button
-                        onClick={() => removeMenuItem(index)}
-                        className="p-1 text-destructive hover:bg-destructive/10 rounded"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+                {navConfig.items.slice(0, 4).map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <label className="text-sm text-muted-foreground w-20">
+                      {index === 0 ? '홈' : index === 1 ? '소개' : index === 2 ? '프로젝트' : '연락처'}
+                    </label>
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) => updateMenuItem(index, 'name', e.target.value)}
+                      className="flex-1 px-2 py-1 border rounded bg-background"
+                      placeholder="메뉴 이름"
+                    />
                   </div>
                 ))}
-                
-                <button
-                  onClick={addMenuItem}
-                  className="w-full py-2 border-2 border-dashed rounded-lg hover:border-primary"
-                >
-                  <Plus className="h-4 w-4 inline mr-2" />
-                  메뉴 추가
-                </button>
-              </div>
-            </div>
-            
-            {/* Settings */}
-            <div className="mb-6 p-4 border rounded-lg">
-              <h4 className="font-medium mb-3">설정</h4>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={navConfig.showNavBar}
-                    onChange={(e) => updateNavConfig('showNavBar', e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm">네비게이션 바 표시</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={navConfig.showThemeToggle}
-                    onChange={(e) => updateNavConfig('showThemeToggle', e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm">다크모드 토글 표시</span>
-                </label>
               </div>
             </div>
             

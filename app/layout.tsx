@@ -1,14 +1,8 @@
 import type React from "react"
-import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { InlineEditorProvider } from "@/contexts/inline-editor-context"
+import { SiteTitle } from "@/components/site-title"
 import "./globals.css"
-
-// ✏️ 여기를 수정하세요
-export const metadata: Metadata = {
-  title: "홍길동의 사이트", // 브라우저 탭에 표시될 이름
-  description: "나의 포트폴리오 사이트", // 사이트 설명
-}
 
 export default function RootLayout({
   children,
@@ -18,6 +12,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <title>나의 포트폴리오</title>
         <link 
           rel="stylesheet" 
           as="style" 
@@ -33,6 +28,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <InlineEditorProvider>
+            <SiteTitle />
             {children}
           </InlineEditorProvider>
         </ThemeProvider>
