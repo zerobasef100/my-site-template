@@ -16,7 +16,7 @@ export async function DELETE(request: NextRequest) {
     
     if (!imagePath) {
       return NextResponse.json(
-        { error: '이미지 경로가 필요합니다' },
+        { error: '파일 경로가 필요합니다' },
         { status: 400 }
       )
     }
@@ -24,7 +24,7 @@ export async function DELETE(request: NextRequest) {
     // 안전성 검사: uploads 폴더 내의 파일만 삭제 가능
     if (!imagePath.startsWith('/uploads/')) {
       return NextResponse.json(
-        { error: 'uploads 폴더의 이미지만 삭제 가능합니다' },
+        { error: 'uploads 폴더의 파일만 삭제 가능합니다' },
         { status: 400 }
       )
     }
@@ -46,11 +46,12 @@ export async function DELETE(request: NextRequest) {
     // 파일 삭제
     await fs.unlink(filePath)
     
-    console.log(`🗑️ 이미지 삭제 완료: ${imagePath}`)
+    const fileType = imagePath.includes('video') ? '비디오' : '이미지'
+    console.log(`🗑️ ${fileType} 삭제 완료: ${imagePath}`)
     
     return NextResponse.json({ 
       success: true,
-      message: '이미지가 삭제되었습니다'
+      message: `${fileType}가 삭제되었습니다`
     })
     
   } catch (error) {

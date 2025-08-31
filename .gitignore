@@ -26,6 +26,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploaded files
-/public/uploads/*
-!/public/uploads/.gitkeep
+# uploaded files (commented out to include images in git)
+# /public/uploads/*
+# !/public/uploads/.gitkeep

@@ -6,7 +6,7 @@ import { EditableText } from "@/components/editable/editable-text"
 import { useInlineEditor } from "@/contexts/inline-editor-context"
 
 export function Footer() {
-  const { getData, saveData, isEditMode } = useInlineEditor()
+  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
   const currentYear = new Date().getFullYear()
   
   // 헤더의 네비게이션 데이터 가져오기 - 기본값 설정
@@ -91,7 +91,7 @@ export function Footer() {
     }
   }, [isEditMode])
 
-  const updateFooterInfo = (key: string, value: string | boolean) => {
+  const updateFooterInfo = async (key: string, value: string | boolean) => {
     // Made with와 템플릿 크레딧 관련 필드는 수정 불가
     if (key === 'showMadeWith' || key === 'madeWithLocation' || 
         key === 'showTemplateCredit' || key === 'templateCreator') {
@@ -100,6 +100,8 @@ export function Footer() {
     const newInfo = { ...footerInfo, [key]: value }
     setFooterInfo(newInfo)
     saveData('footer-info', newInfo)
+    // 파일로도 저장
+    await saveToFile('footer', 'Info', newInfo)
   }
   
   // 푸터 전체를 표시하지 않음

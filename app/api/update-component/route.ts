@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       'projects': 'components/projects.tsx',
       'contact': 'components/contact.tsx',
       'footer': 'components/footer.tsx',
+      'header': 'components/header.tsx',
       'navbar': 'components/navbar.tsx'
     }
     
@@ -37,27 +38,136 @@ export async function POST(request: NextRequest) {
     let content = await fs.readFile(filePath, 'utf-8')
     
     // 🎯 defaultInfo 객체 찾아서 교체
-    // 정규식으로 const defaultInfo = { ... } 부분 찾기
-    const defaultInfoRegex = new RegExp(
-      `(const default${section || 'Info'} = \\{)[^}]*(\\})`,
-      's'
-    )
+    // 더 정확한 방법: AST를 사용하거나 균형잡힌 중괄호 찾기
+    const objectName = `default${section || 'Info'}`
+    
+    // SocialLinks는 배열이므로 다르게 처리
+    const isArray = section === 'SocialLinks'
+    
+    // 여러 패턴 시도 (타입 정의가 있는 경우와 없는 경우)
+    let startIndex = -1
+    let startPattern = ''
+    
+    if (isArray) {
+      // 배열의 경우 여러 패턴 시도
+      const patterns = [
+        `const ${objectName} = [`,
+        `const ${objectName}: { name: string; icon: string; url: string }[] = [`,
+        `const ${objectName}: Array<{ name: string; icon: string; url: string }> = [`,
+        `const ${objectName}: any[] = [`
+      ]
+      
+      for (const pattern of patterns) {
+        startIndex = content.indexOf(pattern)
+        if (startIndex !== -1) {
+          startPattern = pattern
+          break
+        }
+      }
+    } else {
+      startPattern = `const ${objectName} = {`
+      startIndex = content.indexOf(startPattern)
+    }
+    
+    if (startIndex === -1) {
+      return NextResponse.json(
+        { error: `${objectName} 객체를 찾을 수 없습니다` },
+        { status: 400 }
+      )
+    }
+    
+    // 중괄호/대괄호 균형 맞추기로 객체 끝 찾기
+    let braceCount = 0
+    let inString = false
+    let escapeNext = false
+    let endIndex = startIndex + startPattern.length - 1
+    const openChar = isArray ? '[' : '{'
+    const closeChar = isArray ? ']' : '}'
+    
+    for (let i = startIndex + startPattern.length - 1; i < content.length; i++) {
+      const char = content[i]
+      
+      if (escapeNext) {
+        escapeNext = false
+        continue
+      }
+      
+      if (char === '\\') {
+        escapeNext = true
+        continue
+      }
+      
+      if (char === '"' && !escapeNext) {
+        inString = !inString
+        continue
+      }
+      
+      if (!inString) {
+        if (char === openChar || char === '{') {  // 객체 내부에 중괄호도 카운트
+          braceCount++
+        } else if (char === closeChar || (char === '}' && openChar === '[')) {  // 배열 내부의 객체도 처리
+          braceCount--
+          if (braceCount === 0 && char === closeChar) {
+            endIndex = i
+            break
+          }
+        }
+      }
+    }
     
     // 새로운 defaultInfo 객체 생성
-    const newDefaultInfo = `$1\n${Object.entries(data).map(([key, value]) => {
-      if (typeof value === 'string') {
+    // 배열인 경우 다르게 처리
+    let newDefaultInfoContent: string
+    
+    if (isArray) {
+      // SocialLinks는 배열이므로 JSON.stringify로 처리
+      newDefaultInfoContent = JSON.stringify(data, null, 2)
+        .split('\n')
+        .map((line, index) => index === 0 ? line : `  ${line}`)
+        .join('\n')
+    } else {
+      // 객체인 경우 기존 로직
+      const contentArray = Object.entries(data).map(([key, value]) => {
+      // header 컴포넌트의 items 처리 - 아이콘을 문자열로 변환
+      if (component === 'header' && key === 'items' && Array.isArray(value)) {
+        const itemsWithStringIcons = value.map((item: any) => ({
+          ...item,
+          icon: typeof item.icon === 'string' ? item.icon : "Home"
+        }))
+        return `    ${key}: ${JSON.stringify(itemsWithStringIcons)}`
+      } else if (typeof value === 'string') {
         // 문자열 값 이스케이프 처리
         const escaped = value.replace(/"/g, '\\"').replace(/\n/g, '\\n')
         return `    ${key}: "${escaped}"`
       } else if (Array.isArray(value)) {
+        // projects 배열인 경우 타입 정의 추가
+        if (component === 'projects' && key === 'projects') {
+          return `    ${key}: ${JSON.stringify(value)} as Array<{ image: string; video?: string; title: string; description: string }>`
+        }
         return `    ${key}: ${JSON.stringify(value)}`
       } else {
         return `    ${key}: ${JSON.stringify(value)}`
       }
-    }).join(',\n')}\n  $2`
+      }).join(',\n')
+      
+      newDefaultInfoContent = contentArray
+    }
+    
+    // 타입 정의를 유지하면서 새로운 객체 생성
+    let newDefaultInfo: string
+    if (isArray) {
+      // 원래 타입 정의 추출 (있는 경우)
+      const typeMatch = startPattern.match(new RegExp(`const ${objectName}(:[^=]+)? = \\[`))
+      const typeDefinition = typeMatch && typeMatch[1] ? typeMatch[1] : ': { name: string; icon: string; url: string }[]'
+      newDefaultInfo = `const ${objectName}${typeDefinition} = ${newDefaultInfoContent}`
+    } else {
+      newDefaultInfo = `const ${objectName} = {\n${newDefaultInfoContent}\n  }`
+    }
     
     // 파일 내용 교체
-    content = content.replace(defaultInfoRegex, newDefaultInfo)
+    const beforeContent = content.substring(0, startIndex)
+    const afterContent = content.substring(endIndex + 1)
+    content = beforeContent + newDefaultInfo + afterContent
     
     // 파일 저장
     await fs.writeFile(filePath, content, 'utf-8')

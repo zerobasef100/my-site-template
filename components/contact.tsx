@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Phone, Mail, MessageCircle, Instagram, Youtube, Facebook, MapPin, Clock, Globe, Twitter, Send, Linkedin, Edit2, X, Plus, Github, MessageSquare, Twitch } from "lucide-react"
+import { Phone, Mail, MessageCircle, Instagram, Youtube, Facebook, MapPin, Clock, Globe, Twitter, Send, Linkedin, Edit2, X, Plus, Github, MessageSquare, Twitch, Save } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { EditableText } from "@/components/editable/editable-text"
 import { EditableBackground } from "@/components/editable/editable-background"
@@ -26,7 +26,7 @@ const AVAILABLE_ICONS = {
 }
 
 export function Contact() {
-  const { getData, saveData, isEditMode } = useInlineEditor()
+  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showSocialModal, setShowSocialModal] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
@@ -35,34 +35,27 @@ export function Contact() {
   // 기본 데이터
   const defaultInfo = {
     name: "당신의 이름",
-    title: "당신의 직책/직업",
-    company: "", // 회사명 (선택사항)
-    experience: "경력 또는 전문성",
+    title: "직책/직무",
+    company: "",
+    experience: "3년 경력",
     phone: "010-0000-0000",
     email: "your-email@example.com",
+    website: "",
     location: "당신의 위치",
     workTime: "평일 09:00 - 18:00",
-    responseTime: "24시간 내 답변",
-    website: "", // 웹사이트 추가
-    // 소셜 링크들 - 빈 문자열("")로 두면 아이콘 자동으로 숨김
+    responseTime: "24시간 이내 응답",
     sectionTitle: "연락처",
-    sectionSubtitle: "연락처 소개 문구를 작성해주세요. 예) 프로젝트 문의나 협업 제안을 기다리고 있습니다.",
+    sectionSubtitle: "프로젝트 문의나 협업 제안을 기다리고 있습니다. 편하신 방법으로 연락주세요!",
     qrTitle: "QR 코드로 연락처 저장",
     qrSubtitle: "스캔하면 연락처가 자동으로 저장됩니다",
-    bottomMessage: "🚀 언제든 편하게 연락주세요!",
-    bottomSubMessage: "함께 일할 기회를 기다리고 있습니다",
-    // QR 코드 설정
-    qrContent: ['name', 'phone', 'email'], // QR에 포함할 정보
-    profileEmoji: '👤' // 프로필 이모지
+    bottomMessage: "함께 성장하는 파트너가 되겠습니다",
+    bottomSubMessage: "고객님의 성공적인 프로젝트를 위해 최선을 다하겠습니다",
+    qrContent: ["name","phone","email","location","website"],
+    profileEmoji: "👤"
   }
   
   // 소셜 링크 기본값 (배열 형태로 변경)
-  const defaultSocialLinks = [
-    { name: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
-    { name: 'LinkedIn', icon: 'linkedin', url: 'https://linkedin.com' },
-    { name: 'GitHub', icon: 'github', url: 'https://github.com' },
-    { name: 'Twitter', icon: 'twitter', url: '' },
-  ]
+  const defaultSocialLinks: { name: string; icon: string; url: string }[] = []
   
   const [contactInfo, setContactInfo] = useState(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
@@ -96,6 +89,7 @@ export function Contact() {
     const newInfo = { ...contactInfo, [key]: value }
     setContactInfo(newInfo)
     saveData('contact-info', newInfo)
+    // 저장 버튼을 누를 때만 파일에 저장
   }
   
   const addSocialLink = () => {
@@ -103,6 +97,7 @@ export function Contact() {
     newLinks.push({ name: '새 링크', icon: 'globe', url: '' })
     setSocialLinks(newLinks)
     saveData('contact-social-links', newLinks)
+    // 소셜 링크는 별도 저장 로직 필요 - 현재는 localStorage만 사용
   }
   
   const updateSocialLink = (index: number, field: 'name' | 'icon' | 'url', value: string) => {
@@ -110,12 +105,14 @@ export function Contact() {
     newLinks[index] = { ...newLinks[index], [field]: value }
     setSocialLinks(newLinks)
     saveData('contact-social-links', newLinks)
+    // 소셜 링크는 별도 저장 로직 필요 - 현재는 localStorage만 사용
   }
   
   const removeSocialLink = (index: number) => {
     const newLinks = socialLinks.filter((_, i) => i !== index)
     setSocialLinks(newLinks)
     saveData('contact-social-links', newLinks)
+    // 소셜 링크는 별도 저장 로직 필요 - 현재는 localStorage만 사용
   }
 
   // QR 코드에 포함할 내용 결정
@@ -632,15 +629,41 @@ export function Contact() {
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                   />
                 </div>
+                <div>
+                  <label className="text-sm text-muted-foreground">웹사이트</label>
+                  <input
+                    type="text"
+                    value={contactInfo.website || ''}
+                    onChange={(e) => updateContactInfo('website', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="https://example.com"
+                  />
+                </div>
               </div>
             </div>
             
-            <button
-              onClick={() => setShowProfileModal(false)}
-              className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-            >
-              완료
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  // 프로필 정보를 파일로 저장
+                  const success = await saveToFile('contact', 'Info', contactInfo)
+                  if (success) {
+                    console.log('✅ 프로필 정보 저장 완료')
+                  }
+                  setShowProfileModal(false)
+                }}
+                className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                저장 & 완료
+              </button>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -765,15 +788,32 @@ export function Contact() {
               <p className="text-sm text-muted-foreground mb-4">
                 💡 팁: 플랫폼 이름을 입력하고, 아이콘을 선택한 후 URL을 입력하세요. 빈 URL은 표시되지 않습니다.
               </p>
-              <button
-                onClick={() => {
-                  setShowSocialModal(false)
-                  setShowIconPicker(null)
-                }}
-                className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-              >
-                완료
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    // 소셜 링크를 파일로 저장
+                    const success = await saveToFile('contact', 'SocialLinks', socialLinks)
+                    if (success) {
+                      console.log('✅ 소셜 링크 저장 완료')
+                    }
+                    setShowSocialModal(false)
+                    setShowIconPicker(null)
+                  }}
+                  className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  저장 & 완료
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSocialModal(false)
+                    setShowIconPicker(null)
+                  }}
+                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
           </div>
         </div>

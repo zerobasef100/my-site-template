@@ -93,93 +93,19 @@ const SKILL_ICONS = {
 }
 
 export function About() {
-  const { getData, saveData, isEditMode } = useInlineEditor()
+  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
   // 기본 데이터
   const defaultInfo = {
-    // 📝 섹션 제목과 부제목
-    title: "소개",  // 섹션 맨 위에 큰 글씨로 표시
-    subtitle: "당신의 경력과 전문성을 소개하는 글을 작성해주세요. 예) 5년 경력의 개발자로, 사용자 경험을 중시하는 웹 서비스를 만들고 있습니다.",  // 제목 아래 설명
-    
-    // 🎨 배경 이미지 설정
-    backgroundImage: "",  // 사용법: "/about-bg.jpg" (public 폴더에 about-bg.jpg 파일 넣기)
-                         // 사용 안 함: "" (빈 따옴표 유지)
-    backgroundOpacity: 0.1,  // 투명도: 0(완전투명) ~ 0.5(반투명) ~ 1(불투명)
-                            // 추천: 0.1 ~ 0.3 (살짝 보이게)
-    
-    // 💼 경력/학력 카드 (자유롭게 추가 가능)
-    // 아이콘을 선택하고 원하는 내용을 자유롭게 작성
-    experienceCards: [
-      {
-        icon: "briefcase",  // 아이콘 타입
-        title: "회사명 또는 프로젝트명",  // 제목
-        period: "2020 - 현재",  // 기간
-        description: "당신의 역할"  // 설명
-      },
-      {
-        icon: "briefcase",
-        title: "이전 회사명",
-        period: "2018 - 2020",
-        description: "이전 역할"
-      },
-      {
-        icon: "graduation",
-        title: "대학교명",
-        period: "2014 - 2018",
-        description: "전공 및 학위"
-      },
-      {
-        icon: "award",
-        title: "자격증 또는 수상 경력",
-        period: "2019",
-        description: "자격증 설명"
-      }
-      // 더 추가하려면 위와 같은 형식으로 추가
-    ],
-    
-    // 🌟 핵심 역량 (자유롭게 추가 가능)
-    // 아이콘을 선택하고 제목과 설명을 입력하세요
-    skills: [
-      {
-        icon: "trophy",  // 아이콘 타입 (lucide-react 아이콘)
-        title: "브랜드 전략",  // 역량 제목
-        description: "브랜드 아이덴티티 구축 및 포지셔닝 전략 수립"  // 설명
-      },
-      {
-        icon: "sparkles",
-        title: "콘텐츠 마케팅",
-        description: "SNS 콘텐츠 기획 및 바이럴 마케팅 캠페인 운영"
-      },
-      {
-        icon: "target",
-        title: "퍼포먼스 마케팅",
-        description: "데이터 분석 기반 광고 최적화 및 ROI 개선"
-      }
-    ],
-    
-    // 📖 자기소개 스토리
-    // 사용 안 함: story: [],  (대괄호 안을 비우기)
-    storyTitle: "나의 이야기",  // 자기소개 제목
-    story: [
-      "마케팅은 단순히 제품을 파는 것이 아니라, 사람들의 마음을 움직이는 이야기를 전달하는 일이라고 믿습니다. 지난 10년간 다양한 브랜드와 함께하며, 각 브랜드만의 고유한 스토리를 찾아 고객에게 전달하는 일에 열정을 쏟아왔습니다.",  // 첫 번째 문단
-      "특히 디지털 환경에서의 고객 여정을 설계하고, 데이터를 기반으로 지속적으로 개선해나가는 과정을 즐깁니다. 창의적인 아이디어와 분석적 사고의 균형을 통해 측정 가능한 성과를 만들어내는 것이 저의 강점입니다.",  // 두 번째 문단
-      "일하지 않을 때는 새로운 트렌드를 연구하거나, 좋은 커피를 마시며 영감을 얻고, 독서를 통해 시야를 넓히는 시간을 가집니다."  // 세 번째 문단
-      // 더 추가하려면 쉼표(,) 찍고 "문단 내용" 추가
-    ],
-    storyImage: "",  // 사용법: public 폴더에 이미지 파일 넣고 경로 입력
-                     // 사용 안 함: "" (빈 따옴표)
-    
-    // 🎯 취미 & 관심사
-    // 사용 안 함: hobbies: [],  (대괄호 안을 비우기)
-    // 추가 방법: 쉼표(,) 뒤에 "이모지 텍스트" 형식으로 추가
-    hobbies: [
-      "📚 독서",
-      "☕ 카페 투어",
-      "🎨 전시회 관람",
-      "✈️ 여행",
-      "🏃 러닝",
-      "📸 사진"
-      // 더 추가하려면 쉼표(,) 찍고 "🎮 게임" 같은 형식으로 추가
-    ]
+    title: "소개",
+    subtitle: "당신의 전문성과 열정을 소개해주세요.",
+    backgroundImage: "",
+    backgroundOpacity: 0.1,
+    experienceCards: [{"icon":"briefcase","title":"회사명","period":"2020 - 현재","description":"직무 및 역할"},{"icon":"graduation","title":"학교명","period":"2016 - 2020","description":"전공 및 학위"},{"icon":"award","title":"자격증/수상","period":"2021","description":"설명을 입력하세요"}],
+    skills: [{"icon":"code","title":"프론트엔드 개발","description":"React, TypeScript, Next.js를 활용한 모던 웹 개발"},{"icon":"database","title":"백엔드 개발","description":"Node.js, Python, 데이터베이스 설계 및 구현"},{"icon":"palette","title":"UI/UX 디자인","description":"사용자 중심의 인터페이스 디자인"}],
+    storyTitle: "나의 이야기",
+    story: ["저는 기술을 통해 사람들의 삶을 더 편리하고 의미 있게 만드는 일에 열정을 가지고 있습니다.","다양한 프로젝트를 통해 문제 해결 능력과 창의적인 사고를 키워왔으며, 팀원들과의 협업을 통해 함께 성장하는 가치를 배웠습니다.","앞으로도 지속적인 학습과 도전을 통해 더 나은 개발자가 되기 위해 노력하겠습니다."],
+    storyImage: "",
+    hobbies: ["📚 독서", "☕ 카페 투어", "🎨 전시회 관람", "✈️ 여행"]
   }
   
   const [aboutInfo, setAboutInfo] = useState(defaultInfo)
@@ -610,12 +536,28 @@ export function About() {
             </div>
             
             <div className="mt-6 pt-4 border-t">
-              <button
-                onClick={() => setShowCareerModal(false)}
-                className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-              >
-                완료
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowCareerModal(false)}
+                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                >
+                  닫기
+                </button>
+                <button
+                  onClick={async () => {
+                    const success = await saveToFile('about', 'Info', aboutInfo)
+                    if (success) {
+                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
+                      setShowCareerModal(false)
+                    } else {
+                      alert('❌ 파일 저장에 실패했습니다.')
+                    }
+                  }}
+                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+                >
+                  📁 파일에 저장
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -623,7 +565,7 @@ export function About() {
       
       {/* 스킬 편집 모달 */}
       {showSkillModal && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2147483647]">
           <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">핵심 역량 편집</h3>
@@ -731,12 +673,28 @@ export function About() {
               <p className="text-sm text-muted-foreground mb-4">
                 💡 팁: 아이콘을 선택하고 제목과 설명을 입력하세요. 필요한 만큼 자유롭게 추가할 수 있습니다.
               </p>
-              <button
-                onClick={() => setShowSkillModal(false)}
-                className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-              >
-                완료
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSkillModal(false)}
+                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                >
+                  닫기
+                </button>
+                <button
+                  onClick={async () => {
+                    const success = await saveToFile('about', 'Info', aboutInfo)
+                    if (success) {
+                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
+                      setShowSkillModal(false)
+                    } else {
+                      alert('❌ 파일 저장에 실패했습니다.')
+                    }
+                  }}
+                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+                >
+                  📁 파일에 저장
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -744,7 +702,7 @@ export function About() {
       
       {/* 취미 편집 모달 */}
       {showHobbyModal && isEditMode && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2147483647]">
           <div className="bg-background border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">취미 & 관심사 편집</h3>
@@ -807,12 +765,28 @@ export function About() {
               <p className="text-sm text-muted-foreground mb-4">
                 💡 팁: 이모지와 함께 취미를 입력하세요. 예시를 클릭하면 새 취미가 추가됩니다.
               </p>
-              <button
-                onClick={() => setShowHobbyModal(false)}
-                className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-              >
-                완료
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowHobbyModal(false)}
+                  className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                >
+                  닫기
+                </button>
+                <button
+                  onClick={async () => {
+                    const success = await saveToFile('about', 'Info', aboutInfo)
+                    if (success) {
+                      alert('✅ 소개 설정이 파일에 저장되었습니다!')
+                      setShowHobbyModal(false)
+                    } else {
+                      alert('❌ 파일 저장에 실패했습니다.')
+                    }
+                  }}
+                  className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+                >
+                  📁 파일에 저장
+                </button>
+              </div>
             </div>
           </div>
         </div>

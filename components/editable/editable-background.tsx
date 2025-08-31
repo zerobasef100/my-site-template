@@ -39,6 +39,7 @@ export function EditableBackground({
   const [tempVideo, setTempVideo] = useState(video)
   const [tempColor, setTempColor] = useState(color || '#000000')
   const [tempOpacity, setTempOpacity] = useState(opacity)
+  const [imageAspect, setImageAspect] = useState<string>('object-contain')
 
   // 초기값 로드
   useEffect(() => {
@@ -51,6 +52,7 @@ export function EditableBackground({
         } else if (saved.image) {
           setBackgroundType('image')
           setTempImage(saved.image)
+          detectImageAspect(saved.image)
         } else if (saved.color) {
           setBackgroundType('color')
           setTempColor(saved.color)
@@ -60,6 +62,33 @@ export function EditableBackground({
       }
     }
   }, [storageKey])
+
+  // 이미지 비율 감지 함수
+  const detectImageAspect = (src: string) => {
+    if (!src) return
+    
+    const img = new Image()
+    img.onload = () => {
+      const ratio = img.width / img.height
+      
+      // 비율에 따라 object-fit 스타일 결정
+      if (ratio >= 2.5) {
+        // 매우 넓은 이미지는 cover로 (배경으로 적합)
+        setImageAspect('object-cover')
+      } else {
+        // 일반적인 비율은 contain으로 (전체가 보이도록)
+        setImageAspect('object-contain')
+      }
+    }
+    img.src = src
+  }
+
+  // 이미지가 변경될 때마다 비율 감지
+  useEffect(() => {
+    if (tempImage) {
+      detectImageAspect(tempImage)
+    }
+  }, [tempImage])
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -74,6 +103,7 @@ export function EditableBackground({
         } else {
           setTempImage(result)
           setBackgroundType('image')
+          detectImageAspect(result)
           handleSave('image', result)
         }
       }
@@ -81,12 +111,43 @@ export function EditableBackground({
     }
   }
 
-  const handleSave = (type?: string, value?: string) => {
+  const handleSave = async (type?: string, value?: string) => {
+    // 이전 파일 삭제를 위한 로직
+    const prevImage = tempImage
+    const prevVideo = tempVideo
+    
     const data = {
       image: backgroundType === 'image' ? (value || tempImage) : '',
       video: backgroundType === 'video' ? (value || tempVideo) : '',
       color: backgroundType === 'color' ? tempColor : '',
       opacity: tempOpacity
+    }
+    
+    // 배경 타입이 변경되면 이전 파일 삭제 (업로드된 파일만)
+    if (backgroundType !== 'image' && prevImage && prevImage.includes('/uploads/')) {
+      // 이미지에서 다른 타입으로 변경시 이미지 삭제
+      try {
+        await fetch('/api/delete-image', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePath: prevImage })
+        })
+      } catch (error) {
+        console.error('Failed to delete old image:', error)
+      }
+    }
+    
+    if (backgroundType !== 'video' && prevVideo && prevVideo.includes('/uploads/')) {
+      // 비디오에서 다른 타입으로 변경시 비디오 삭제
+      try {
+        await fetch('/api/delete-image', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePath: prevVideo })
+        })
+      } catch (error) {
+        console.error('Failed to delete old video:', error)
+      }
     }
     
     onChange(data)
@@ -110,12 +171,11 @@ export function EditableBackground({
       )
     } else if (backgroundType === 'image' && tempImage) {
       return (
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${tempImage})`,
-            opacity: tempOpacity
-          }}
+        <img
+          src={tempImage}
+          alt="Background"
+          className={`absolute inset-0 w-full h-full ${imageAspect}`}
+          style={{ opacity: tempOpacity }}
         />
       )
     } else if (backgroundType === 'color' && tempColor) {
@@ -227,7 +287,9 @@ export function EditableBackground({
                     // 파일 업로드
                     const formData = new FormData()
                     formData.append('file', file)
-                    formData.append('purpose', 'hero-background')
+                    // storageKey를 기반으로 purpose 설정
+                    const purpose = storageKey ? storageKey.replace('-background', '') + '-background' : 'background'
+                    formData.append('purpose', purpose)
                     formData.append('oldPath', tempImage || '')
                     
                     try {
@@ -240,6 +302,7 @@ export function EditableBackground({
                       
                       if (result.success) {
                         setTempImage(result.path)
+                        detectImageAspect(result.path)
                         handleSave('image', result.path)
                         alert('✅ 배경 이미지가 업로드되었습니다!')
                       } else {
@@ -263,7 +326,12 @@ export function EditableBackground({
                   <input
                     type="text"
                     value={tempImage}
-                    onChange={(e) => setTempImage(e.target.value)}
+                    onChange={(e) => {
+                      setTempImage(e.target.value)
+                      if (e.target.value) {
+                        detectImageAspect(e.target.value)
+                      }
+                    }}
                     placeholder="또는 URL 직접 입력 (https://...)"
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                   />
@@ -301,7 +369,9 @@ export function EditableBackground({
                     // 파일 업로드
                     const formData = new FormData()
                     formData.append('file', file)
-                    formData.append('purpose', 'hero-background-video')
+                    // storageKey를 기반으로 purpose 설정
+                    const purpose = storageKey ? storageKey.replace('-background', '') + '-background-video' : 'background-video'
+                    formData.append('purpose', purpose)
                     formData.append('oldPath', tempVideo || '')
                     
                     try {
@@ -376,7 +446,32 @@ export function EditableBackground({
             <div className="space-y-2 mt-6">
               {/* 기본으로 설정 버튼 */}
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // 기존 파일들 삭제 (업로드된 파일만)
+                  if (tempImage && tempImage.includes('/uploads/')) {
+                    try {
+                      await fetch('/api/delete-image', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagePath: tempImage })
+                      })
+                    } catch (error) {
+                      console.error('Failed to delete image:', error)
+                    }
+                  }
+                  
+                  if (tempVideo && tempVideo.includes('/uploads/')) {
+                    try {
+                      await fetch('/api/delete-image', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagePath: tempVideo })
+                      })
+                    } catch (error) {
+                      console.error('Failed to delete video:', error)
+                    }
+                  }
+                  
                   // 모든 값을 초기화
                   setTempImage('')
                   setTempVideo('')

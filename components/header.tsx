@@ -24,66 +24,27 @@ const ICON_MAP = {
 }
 
 export function Header() {
-  const { getData, saveData, isEditMode } = useInlineEditor()
-  // 기본 데이터
+  const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
+  // 기본 데이터 (파일에는 문자열로 저장되지만 여기서는 컴포넌트로 변환)
   const defaultConfig = {
-    // 🏷️ 로고 설정
-    logo: "나의 포트폴리오",  // 네비바 로고 텍스트 (빈 문자열이면 로고 숨김)
-    logoImage: "",       // 로고 이미지 경로 (예: "/logo.png") - 사용 안하면 빈 문자열
-    
-    // 🎨 네비게이션 스타일
-    showNavBar: true,    // false면 네비게이션 바 전체 숨김
-    showThemeToggle: true, // false면 다크모드 토글 버튼 숨김
-    
-    // 📱 메뉴 항목들 (필요한 것만 사용, 최대 6개 권장)
-    // 
-    // 🎯 사용 가능한 아이콘들:
-    // Home, User, Briefcase, Mail, Settings, Heart, Star, 
-    // Camera, Music, Book, Coffee, Rocket
-    // 
-    // ⚠️ 주의: url은 반드시 #으로 시작 (섹션 이동용)
-    items: [
-      {
-        name: "홈",           // 메뉴 이름
-        url: "#hero",         // 히어로 섹션으로 이동
-        icon: Home,          // 아이콘 (위 목록에서 선택)
-        show: true           // false면 이 메뉴 숨김
-      },
-      {
-        name: "소개",
-        url: "#about",
-        icon: User,
-        show: true
-      },
-      {
-        name: "프로젝트",
-        url: "#projects",
-        icon: Briefcase,
-        show: true
-      },
-      {
-        name: "연락처",
-        url: "#contact",
-        icon: Mail,
-        show: true
-      },
-      // ===== 추가 메뉴 예시 (필요시 show를 true로) =====
-      {
-        name: "갤러리",
-        url: "#gallery",
-        icon: Camera,
-        show: false  // 사용하려면 true로 변경
-      },
-      {
-        name: "블로그",
-        url: "#blog",
-        icon: Book,
-        show: false  // 사용하려면 true로 변경
-      }
-    ]
+    logo: "Portfolio",
+    logoImage: "",
+    showNavBar: true,
+    showThemeToggle: true,
+    items: [{"name":"홈","url":"#hero","icon":"Home","show":true},{"name":"소개","url":"#about","icon":"User","show":true},{"name":"프로젝트","url":"#projects","icon":"Briefcase","show":true},{"name":"연락처","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
+    siteTitle: "나의 포트폴리오"
   }
   
-  const [navConfig, setNavConfig] = useState(defaultConfig)
+  // defaultConfig의 아이콘을 컴포넌트로 변환한 상태로 초기화
+  const [navConfig, setNavConfig] = useState({
+    ...defaultConfig,
+    items: defaultConfig.items.map(item => ({
+      ...item,
+      icon: typeof item.icon === 'string' 
+        ? (ICON_MAP[item.icon as keyof typeof ICON_MAP] || Home)
+        : item.icon
+    }))
+  })
   const [showEditModal, setShowEditModal] = useState(false)
   const [siteTitle, setSiteTitle] = useState('나의 포트폴리오')
   
@@ -150,10 +111,13 @@ export function Header() {
       items?: Array<{ name: string; url: string; icon: string | LucideIcon; show: boolean }> 
     } = { ...newConfig }
     if (configToSave.items) {
-      configToSave.items = newConfig.items.map((item) => ({
-        ...item,
-        icon: Object.keys(ICON_MAP).find(key => ICON_MAP[key as keyof typeof ICON_MAP] === item.icon) || 'Home'
-      }))
+      configToSave.items = newConfig.items.map((item) => {
+        const iconName = Object.keys(ICON_MAP).find(key => ICON_MAP[key as keyof typeof ICON_MAP] === item.icon) || 'Home'
+        return {
+          ...item,
+          icon: iconName
+        }
+      })
     }
     saveData('nav-config', configToSave)
   }
@@ -180,8 +144,20 @@ export function Header() {
     updateNavConfig('items', newItems)
   }
   
-  // 실제로 표시할 메뉴만 필터링
-  const activeItems = navConfig.items.filter(item => item.show)
+  // 실제로 표시할 메뉴만 필터링하고 아이콘 문자열을 컴포넌트로 변환
+  const activeItems = navConfig.items
+    .filter(item => item.show)
+    .map(item => {
+      // icon이 이미 컴포넌트인 경우 그대로 사용
+      if (typeof item.icon !== 'string') {
+        return item
+      }
+      // 문자열인 경우 컴포넌트로 변환
+      return {
+        ...item,
+        icon: ICON_MAP[item.icon as keyof typeof ICON_MAP] || Home
+      }
+    })
   
   // 네비게이션 바를 표시하지 않음
   if (!navConfig.showNavBar) {
@@ -271,12 +247,43 @@ export function Header() {
               </div>
             </div>
             
-            <button
-              onClick={() => setShowEditModal(false)}
-              className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-            >
-              완료
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="flex-1 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+              >
+                닫기
+              </button>
+              <button
+                onClick={async () => {
+                  // 아이콘을 문자열로 변환한 설정 객체 생성
+                  const configToSave = {
+                    ...navConfig,
+                    items: navConfig.items.map((item) => ({
+                      ...item,
+                      icon: typeof item.icon === 'string' 
+                        ? item.icon 
+                        : Object.keys(ICON_MAP).find(key => ICON_MAP[key as keyof typeof ICON_MAP] === item.icon) || 'Home'
+                    }))
+                  }
+                  
+                  // header의 defaultConfig 전체를 파일에 저장
+                  const success = await saveToFile('header', 'Config', configToSave)
+                  
+                  if (success) {
+                    saveData('nav-config', configToSave)
+                    saveData('site-title', siteTitle)
+                    alert('✅ 네비게이션 설정이 파일에 저장되었습니다!')
+                    setShowEditModal(false)
+                  } else {
+                    alert('❌ 파일 저장에 실패했습니다.')
+                  }
+                }}
+                className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium"
+              >
+                📁 파일에 저장
+              </button>
+            </div>
           </div>
         </div>
       )}

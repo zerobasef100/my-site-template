@@ -30,43 +30,49 @@ const AVAILABLE_ICONS = {
 }
 
 export function Hero() {
-  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
+  const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
   
   // 초기 데이터 - 배열 형태로 변경
-  const defaultSocialLinks = [
-    { name: 'Instagram', icon: 'instagram', url: 'https://instagram.com' },
-    { name: 'GitHub', icon: 'github', url: 'https://github.com' },
-    { name: 'LinkedIn', icon: 'linkedin', url: 'https://linkedin.com' },
-    { name: 'Email', icon: 'mail', url: 'your-email@example.com' },
-  ]
+  const defaultSocialLinks = [{"name":"Instagram","icon":"instagram","url":"https://instagram.com/username"},{"name":"YouTube","icon":"youtube","url":"https://youtube.com/@username"}]
   
   const defaultInfo = {
     greeting: "안녕하세요,",
     name: "당신의 이름",
-    title: "당신의 직업",
-    description: "당신을 소개하는 한 줄 문장을 작성해주세요",
+    title: "프론트엔드 개발자",
+    description: "창의적인 아이디어로 웹 경험을 디자인합니다.",
     profileImage: "",
     backgroundImage: "",
-    backgroundOpacity: 0.5,
+    backgroundVideo: "",
+    backgroundOpacity: 0.1,
     projectButton: "프로젝트 보기"
   }
 
-  const [heroInfo, setHeroInfo] = useState(defaultInfo)
+  const [heroInfo, setHeroInfo] = useState<typeof defaultInfo & { backgroundVideo?: string }>(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
   const [showSocialEditor, setShowSocialEditor] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState<number | null>(null)
   const [backgroundData, setBackgroundData] = useState({
     image: defaultInfo.backgroundImage,
-    video: '',
+    video: defaultInfo.backgroundVideo,
     color: '',
     opacity: defaultInfo.backgroundOpacity
   })
 
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
-    const savedData = getData('hero-info')
+    const savedData = getData('hero-info') as any
     if (savedData) {
       setHeroInfo({ ...defaultInfo, ...savedData })
+      // backgroundVideo가 있으면 backgroundData에도 설정
+      if (savedData.backgroundVideo) {
+        setBackgroundData(prev => ({ ...prev, video: savedData.backgroundVideo }))
+      }
+      if (savedData.backgroundImage) {
+        setBackgroundData(prev => ({ ...prev, image: savedData.backgroundImage }))
+      }
+      if (savedData.backgroundOpacity !== undefined) {
+        setBackgroundData(prev => ({ ...prev, opacity: savedData.backgroundOpacity }))
+      }
     }
     
     const savedSocial = getData('hero-social-links') as { name: string; icon: string; url: string }[] | null
@@ -154,6 +160,14 @@ export function Hero() {
         const newData = { ...backgroundData, ...data }
         setBackgroundData(newData)
         saveData('hero-background', newData)
+        
+        // heroInfo도 업데이트 (파일 저장을 위해)
+        const updatedHeroInfo = { ...heroInfo }
+        if (data.image !== undefined) updatedHeroInfo.backgroundImage = data.image
+        if (data.video !== undefined) updatedHeroInfo.backgroundVideo = data.video
+        if (data.opacity !== undefined) updatedHeroInfo.backgroundOpacity = data.opacity
+        setHeroInfo(updatedHeroInfo)
+        saveData('hero-info', updatedHeroInfo)
       }}
       storageKey="hero-background"
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
@@ -240,15 +254,17 @@ export function Hero() {
             {/* 오른쪽: 프로필 이미지 */}
             <div className="order-1 md:order-2 flex justify-center">
               <div className="relative">
-                <EditableMedia
-                  src={heroInfo.profileImage}
-                  onChange={(src) => updateHeroInfo('profileImage', src)}
-                  type="image"
-                  storageKey="hero-profileImage"
-                  className="w-64 h-64 md:w-80 md:h-80 rounded-full object-cover shadow-2xl"
-                  alt="프로필"
-                  purpose="hero-profile"
-                />
+                <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-muted overflow-hidden shadow-2xl">
+                  <EditableMedia
+                    src={heroInfo.profileImage}
+                    onChange={(src) => updateHeroInfo('profileImage', src)}
+                    type="image"
+                    storageKey="hero-profileImage"
+                    className="w-full h-full object-contain"
+                    alt="프로필"
+                    purpose="hero-profile"
+                  />
+                </div>
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/20 to-transparent pointer-events-none" />
               </div>
             </div>
@@ -397,18 +413,20 @@ export function Hero() {
                       title: heroInfo.title,
                       description: heroInfo.description,
                       profileImage: heroInfo.profileImage,
-                      backgroundImage: heroInfo.backgroundImage,
-                      backgroundOpacity: heroInfo.backgroundOpacity,
+                      backgroundImage: backgroundData.image,
+                      backgroundVideo: backgroundData.video,
+                      backgroundOpacity: backgroundData.opacity,
                       projectButton: heroInfo.projectButton,
                     }
                     
-                    // 파일에 저장
-                    const success = await saveToFile('hero', 'Info', allData)
+                    // heroInfo 파일에 저장
+                    const success1 = await saveToFile('hero', 'Info', allData)
                     
-                    // 소셜 링크도 별도로 저장
-                    if (success) {
-                      // defaultSocialLinks 변수 업데이트를 위한 별도 API 호출 필요
-                      // 일단 localStorage 업데이트
+                    // 소셜 링크도 파일에 저장 (defaultSocialLinks 필드 업데이트)
+                    const success2 = await saveFieldToFile('hero', 'defaultSocialLinks', socialLinks)
+                    
+                    if (success1 && success2) {
+                      // localStorage도 업데이트
                       saveData('hero-info', heroInfo)
                       saveData('hero-social-links', socialLinks)
                       saveData('hero-background', backgroundData)

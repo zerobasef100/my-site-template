@@ -10,50 +10,14 @@ import { useInlineEditor } from "@/contexts/inline-editor-context"
 import { COMMON_STYLES } from "@/lib/constants"
 
 export function Projects() {
-  const { getData, saveData, isEditMode } = useInlineEditor()
+  const { getData, saveData, isEditMode, saveToFile } = useInlineEditor()
   // 기본 데이터
   const defaultInfo = {
-    // 📝 섹션 제목과 설명
     title: "프로젝트",
-    subtitle: "당신이 진행한 프로젝트들을 소개해주세요",
-    
-    // 더보기 설정
-    initialDisplay: 6,  // 처음에 보여줄 프로젝트 개수
-    loadMoreCount: 3,   // 더보기 클릭 시 추가로 보여줄 개수
-    
-    // 🖼️ 프로젝트 목록
-    projects: [
-      {
-        image: "",  // 이미지 파일 경로 (public 폴더에 이미지 넣고 "/이미지명.jpg" 형식으로 입력)
-        title: "프로젝트명 1",  // 프로젝트 제목
-        description: "프로젝트에 대한 간단한 설명"  // 설명
-      },
-      {
-        image: "",
-        title: "프로젝트명 2",
-        description: "프로젝트에 대한 간단한 설명"
-      },
-      {
-        image: "",
-        title: "프로젝트명 3",
-        description: "프로젝트에 대한 간단한 설명"
-      },
-      {
-        image: "",
-        title: "프로젝트명 4",
-        description: "프로젝트에 대한 간단한 설명"
-      },
-      {
-        image: "",
-        title: "프로젝트명 5",
-        description: "프로젝트에 대한 간단한 설명"
-      },
-      {
-        image: "",
-        title: "프로젝트명 6",
-        description: "프로젝트에 대한 간단한 설명"
-      }
-    ]
+    subtitle: "프로젝트",
+    initialDisplay: 6,
+    loadMoreCount: 3,
+    projects: [] as Array<{ image: string; video?: string; title: string; description: string }>
   }
 
   const [projectsInfo, setProjectsInfo] = useState(defaultInfo)
@@ -89,22 +53,60 @@ export function Projects() {
     }
   }, [isEditMode]) // isEditMode가 변경될 때마다 데이터 다시 로드
   
-  const updateProjectsInfo = (key: string, value: string | number | boolean | typeof projectsInfo.projects) => {
+  const updateProjectsInfo = async (key: string, value: string | number | boolean | typeof projectsInfo.projects) => {
     const newInfo = { ...projectsInfo, [key]: value }
     setProjectsInfo(newInfo)
     saveData('projects-info', newInfo)
+    // 파일에도 자동 저장
+    await saveToFile('projects', 'Info', newInfo)
   }
   
-  const updateProject = (index: number, field: string, value: string) => {
+  const updateProject = async (index: number, field: string, value: string) => {
     const newProjects = [...projectsInfo.projects]
     newProjects[index] = { ...newProjects[index], [field]: value }
-    updateProjectsInfo('projects', newProjects)
+    await updateProjectsInfo('projects', newProjects)
   }
   
   
-  const removeProject = (index: number) => {
+  const removeProject = async (index: number) => {
+    // 삭제할 프로젝트의 이미지/비디오 파일 경로 가져오기
+    const projectToRemove = projectsInfo.projects[index]
+    
+    // 이미지가 있고 uploads 폴더의 파일인 경우 삭제
+    if (projectToRemove.image && projectToRemove.image.includes('/uploads/')) {
+      try {
+        const response = await fetch('/api/delete-image', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePath: projectToRemove.image })
+        })
+        if (response.ok) {
+          console.log(`✅ 프로젝트 이미지 삭제 완료: ${projectToRemove.image}`)
+        }
+      } catch (error) {
+        console.error('프로젝트 이미지 삭제 실패:', error)
+      }
+    }
+    
+    // 비디오가 있고 uploads 폴더의 파일인 경우 삭제
+    if (projectToRemove.video && projectToRemove.video.includes('/uploads/')) {
+      try {
+        const response = await fetch('/api/delete-image', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePath: projectToRemove.video })
+        })
+        if (response.ok) {
+          console.log(`✅ 프로젝트 비디오 삭제 완료: ${projectToRemove.video}`)
+        }
+      } catch (error) {
+        console.error('프로젝트 비디오 삭제 실패:', error)
+      }
+    }
+    
+    // 프로젝트 목록에서 제거
     const newProjects = projectsInfo.projects.filter((_, i) => i !== index)
-    updateProjectsInfo('projects', newProjects)
+    await updateProjectsInfo('projects', newProjects)
   }
   
   // 표시할 프로젝트들
@@ -223,7 +225,7 @@ export function Projects() {
                   <div 
                     key={index}
                     className="group flex flex-col relative cursor-pointer"
-                    onClick={() => !isEditMode && setSelectedImage(project.image)}
+                    onClick={() => !isEditMode && setSelectedImage(project.video || project.image)}
                   >
                     {isEditMode && (
                       <button
@@ -237,18 +239,28 @@ export function Projects() {
                       </button>
                     )}
                     
-                    {/* 이미지 영역 */}
-                    <div className="relative h-64 rounded-lg bg-muted mb-3 overflow-hidden">
-                      <EditableMedia
-                        src={project.image || ""}
-                        onChange={(src) => updateProject(index, 'image', src)}
-                        type="auto"
-                        storageKey={`project-${index}-image`}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        alt={project.title}
-                        purpose={`project-${index}`}
-                        allowVideo={true}
-                      />
+                    {/* 이미지/비디오 영역 */}
+                    <div className="relative aspect-[4/3] rounded-lg bg-muted mb-3 overflow-hidden">
+                      {project.video ? (
+                        <video
+                          src={project.video}
+                          className="absolute inset-0 w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <EditableMedia
+                          src={project.image || ""}
+                          onChange={(src) => updateProject(index, 'image', src)}
+                          type="auto"
+                          storageKey={`project-${index}-image`}
+                          className="absolute inset-0 w-full h-full object-contain bg-muted transition-transform duration-300 group-hover:scale-105"
+                          alt={project.title}
+                          purpose={`project-${index}`}
+                        />
+                      )}
                     </div>
                     
                     {/* 텍스트 영역 */}
@@ -501,11 +513,27 @@ export function Projects() {
             
             <div className="mt-6 flex gap-2">
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (newProject.title && newProject.description) {
-                    const updatedProjects = [...projectsInfo.projects, newProject]
-                    setProjectsInfo({...projectsInfo, projects: updatedProjects})
-                    saveData('projects-info', {...projectsInfo, projects: updatedProjects})
+                    // 비디오 URL 체크 및 처리
+                    const isVideo = newProject.image && (newProject.image.includes('.mp4') || newProject.image.includes('.webm'))
+                    const projectData = {
+                      image: isVideo ? '' : newProject.image,
+                      video: isVideo ? newProject.image : '',
+                      title: newProject.title,
+                      description: newProject.description
+                    }
+                    const updatedProjects = [...projectsInfo.projects, projectData]
+                    const updatedInfo = {...projectsInfo, projects: updatedProjects}
+                    setProjectsInfo(updatedInfo)
+                    saveData('projects-info', updatedInfo)
+                    
+                    // 파일에도 저장
+                    const success = await saveToFile('projects', 'Info', updatedInfo)
+                    if (success) {
+                      alert('✅ 프로젝트가 추가되고 파일에 저장되었습니다!')
+                    }
+                    
                     setNewProject({ image: "", title: "", description: "" })
                     setShowProjectModal(false)
                   } else {
@@ -660,10 +688,17 @@ export function Projects() {
                 기본값으로 초기화
               </button>
               <button
-                onClick={() => setShowDisplaySettings(false)}
+                onClick={async () => {
+                  // 파일에 저장
+                  const success = await saveToFile('projects', 'Info', projectsInfo)
+                  if (success) {
+                    alert('✅ 프로젝트 설정이 파일에 저장되었습니다!')
+                  }
+                  setShowDisplaySettings(false)
+                }}
                 className="flex-1 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
               >
-                완료
+                📁 저장 & 완료
               </button>
             </div>
           </div>
