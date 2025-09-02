@@ -41,37 +41,31 @@ export function Hero() {
     title: "프론트엔드 개발자",
     description: "창의적인 아이디어로 웹 경험을 디자인합니다.",
     profileImage: "",
-    backgroundImage: "",
-    backgroundVideo: "",
-    backgroundOpacity: 0.1,
+    background: {
+      image: "",
+      video: "",
+      color: "",
+      opacity: 0.1
+    },
     projectButton: "프로젝트 보기"
   }
 
-  const [heroInfo, setHeroInfo] = useState<typeof defaultInfo & { backgroundVideo?: string }>(defaultInfo)
+  const [heroInfo, setHeroInfo] = useState(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
   const [showSocialEditor, setShowSocialEditor] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState<number | null>(null)
-  const [backgroundData, setBackgroundData] = useState({
-    image: defaultInfo.backgroundImage,
-    video: defaultInfo.backgroundVideo,
-    color: '',
-    opacity: defaultInfo.backgroundOpacity
-  })
+  const [backgroundData, setBackgroundData] = useState(
+    defaultInfo.background
+  )
 
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
     const savedData = getData('hero-info') as any
     if (savedData) {
       setHeroInfo({ ...defaultInfo, ...savedData })
-      // backgroundVideo가 있으면 backgroundData에도 설정
-      if (savedData.backgroundVideo) {
-        setBackgroundData(prev => ({ ...prev, video: savedData.backgroundVideo }))
-      }
-      if (savedData.backgroundImage) {
-        setBackgroundData(prev => ({ ...prev, image: savedData.backgroundImage }))
-      }
-      if (savedData.backgroundOpacity !== undefined) {
-        setBackgroundData(prev => ({ ...prev, opacity: savedData.backgroundOpacity }))
+      // background 데이터가 있으면 설정
+      if (savedData.background) {
+        setBackgroundData(savedData.background)
       }
     }
     
@@ -162,10 +156,7 @@ export function Hero() {
         saveData('hero-background', newData)
         
         // heroInfo도 업데이트 (파일 저장을 위해)
-        const updatedHeroInfo = { ...heroInfo }
-        if (data.image !== undefined) updatedHeroInfo.backgroundImage = data.image
-        if (data.video !== undefined) updatedHeroInfo.backgroundVideo = data.video
-        if (data.opacity !== undefined) updatedHeroInfo.backgroundOpacity = data.opacity
+        const updatedHeroInfo = { ...heroInfo, background: newData }
         setHeroInfo(updatedHeroInfo)
         saveData('hero-info', updatedHeroInfo)
       }}

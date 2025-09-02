@@ -17,6 +17,12 @@ export function Projects() {
     subtitle: "프로젝트",
     initialDisplay: 6,
     loadMoreCount: 3,
+    background: {
+      image: "",
+      video: "",
+      color: "",
+      opacity: 0.1
+    },
     projects: [] as Array<{ image: string; video?: string; title: string; description: string }>
   }
 
@@ -31,20 +37,21 @@ export function Projects() {
     title: "",
     description: ""
   })
-  const [backgroundData, setBackgroundData] = useState({
-    image: '',
-    video: '',
-    color: '',
-    opacity: 0.1
-  })
+  const [backgroundData, setBackgroundData] = useState(
+    defaultInfo.background
+  )
   
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
-    const savedData = getData('projects-info')
+    const savedData = getData('projects-info') as any
     if (savedData) {
       const mergedData = { ...defaultInfo, ...savedData }
       setProjectsInfo(mergedData)
       setDisplayCount(mergedData.initialDisplay || defaultInfo.initialDisplay)
+      // background 데이터가 있으면 설정
+      if (savedData.background) {
+        setBackgroundData(savedData.background)
+      }
     }
     
     const savedBg = getData('projects-background') as { image: string; video: string; color: string; opacity: number } | null
@@ -186,7 +193,16 @@ export function Projects() {
         video={backgroundData.video}
         color={backgroundData.color}
         opacity={backgroundData.opacity}
-        onChange={(data) => setBackgroundData(prev => ({ ...prev, ...data }))}
+        onChange={(data) => {
+          const newData = { ...backgroundData, ...data }
+          setBackgroundData(newData)
+          saveData('projects-background', newData)
+          
+          // projectsInfo도 업데이트 (파일 저장을 위해)
+          const updatedProjectsInfo = { ...projectsInfo, background: newData }
+          setProjectsInfo(updatedProjectsInfo)
+          saveData('projects-info', updatedProjectsInfo)
+        }}
         storageKey="projects-background"
         className="relative"
       >

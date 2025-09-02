@@ -98,8 +98,12 @@ export function About() {
   const defaultInfo = {
     title: "소개",
     subtitle: "당신의 전문성과 열정을 소개해주세요.",
-    backgroundImage: "",
-    backgroundOpacity: 0.1,
+    background: {
+      image: "",
+      video: "",
+      color: "",
+      opacity: 0.1
+    },
     experienceCards: [{"icon":"briefcase","title":"회사명","period":"2020 - 현재","description":"직무 및 역할"},{"icon":"graduation","title":"학교명","period":"2016 - 2020","description":"전공 및 학위"},{"icon":"award","title":"자격증/수상","period":"2021","description":"설명을 입력하세요"}],
     skills: [{"icon":"code","title":"프론트엔드 개발","description":"React, TypeScript, Next.js를 활용한 모던 웹 개발"},{"icon":"database","title":"백엔드 개발","description":"Node.js, Python, 데이터베이스 설계 및 구현"},{"icon":"palette","title":"UI/UX 디자인","description":"사용자 중심의 인터페이스 디자인"}],
     storyTitle: "나의 이야기",
@@ -109,21 +113,22 @@ export function About() {
   }
   
   const [aboutInfo, setAboutInfo] = useState(defaultInfo)
-  const [backgroundData, setBackgroundData] = useState({
-    image: defaultInfo.backgroundImage,
-    video: '',
-    color: '',
-    opacity: defaultInfo.backgroundOpacity
-  })
+  const [backgroundData, setBackgroundData] = useState(
+    defaultInfo.background
+  )
   const [showCareerModal, setShowCareerModal] = useState(false)
   const [showSkillModal, setShowSkillModal] = useState(false)
   const [showHobbyModal, setShowHobbyModal] = useState(false)
   
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
-    const savedData = getData('about-info')
+    const savedData = getData('about-info') as any
     if (savedData) {
       setAboutInfo({ ...defaultInfo, ...savedData })
+      // background 데이터가 있으면 설정
+      if (savedData.background) {
+        setBackgroundData(savedData.background)
+      }
     }
     
     const savedBg = getData('about-background') as { image: string; video: string; color: string; opacity: number } | null
@@ -204,7 +209,16 @@ export function About() {
       video={backgroundData.video}
       color={backgroundData.color}
       opacity={backgroundData.opacity}
-      onChange={(data) => setBackgroundData(prev => ({ ...prev, ...data }))}
+      onChange={(data) => {
+        const newData = { ...backgroundData, ...data }
+        setBackgroundData(newData)
+        saveData('about-background', newData)
+        
+        // aboutInfo도 업데이트 (파일 저장을 위해)
+        const updatedAboutInfo = { ...aboutInfo, background: newData }
+        setAboutInfo(updatedAboutInfo)
+        saveData('about-info', updatedAboutInfo)
+      }}
       storageKey="about-background"
       className="py-20 bg-muted/30 relative"
     >

@@ -51,7 +51,13 @@ export function Contact() {
     bottomMessage: "함께 성장하는 파트너가 되겠습니다",
     bottomSubMessage: "고객님의 성공적인 프로젝트를 위해 최선을 다하겠습니다",
     qrContent: ["name","phone","email","location","website"],
-    profileEmoji: "👤"
+    profileEmoji: "👤",
+    background: {
+      image: "",
+      video: "",
+      color: "",
+      opacity: 0.1
+    }
   }
   
   // 소셜 링크 기본값 (배열 형태로 변경)
@@ -59,18 +65,19 @@ export function Contact() {
   
   const [contactInfo, setContactInfo] = useState(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
-  const [backgroundData, setBackgroundData] = useState({
-    image: '',
-    video: '',
-    color: '',
-    opacity: 0.1
-  })
+  const [backgroundData, setBackgroundData] = useState(
+    defaultInfo.background
+  )
   
   // localStorage에서 데이터 로드
   useEffect(() => {
-    const savedData = getData('contact-info')
+    const savedData = getData('contact-info') as any
     if (savedData) {
       setContactInfo({ ...defaultInfo, ...savedData })
+      // background 데이터가 있으면 설정
+      if (savedData.background) {
+        setBackgroundData(savedData.background)
+      }
     }
     
     const savedSocial = getData('contact-social-links') as { name: string; icon: string; url: string }[] | null
@@ -185,7 +192,16 @@ export function Contact() {
       video={backgroundData.video}
       color={backgroundData.color}
       opacity={backgroundData.opacity}
-      onChange={(data) => setBackgroundData(prev => ({ ...prev, ...data }))}
+      onChange={(data) => {
+        const newData = { ...backgroundData, ...data }
+        setBackgroundData(newData)
+        saveData('contact-background', newData)
+        
+        // contactInfo도 업데이트 (파일 저장을 위해)
+        const updatedContactInfo = { ...contactInfo, background: newData }
+        setContactInfo(updatedContactInfo)
+        saveData('contact-info', updatedContactInfo)
+      }}
       storageKey="contact-background"
       className="relative"
     >
