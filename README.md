@@ -47,8 +47,18 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/yourusername/vibecoding.git
-cd vibecoding
+git clone https://github.com/Mrbaeksang/my-site-template.git
+
+# 브랜치 확인 (기본 브랜치는 main입니다)
+cd my-site-template
+git branch
+
+# 만약 master 브랜치에 있다면 main으로 전환
+git checkout main
+
+# 또는 처음부터 main 브랜치 지정하여 클론
+git clone -b main https://github.com/Mrbaeksang/my-site-template.git
+cd my-site-template
 
 # 패키지 설치
 npm install
