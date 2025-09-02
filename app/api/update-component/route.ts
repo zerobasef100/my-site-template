@@ -78,13 +78,22 @@ export async function POST(request: NextRequest) {
     
     // 중괄호/대괄호 균형 맞추기로 객체 끝 찾기
     let braceCount = 0
+    let bracketCount = 0
     let inString = false
     let escapeNext = false
+    let stringChar = ''
     let endIndex = startIndex + startPattern.length - 1
     const openChar = isArray ? '[' : '{'
     const closeChar = isArray ? ']' : '}'
     
-    for (let i = startIndex + startPattern.length - 1; i < content.length; i++) {
+    // 시작 문자부터 카운트 시작
+    if (isArray) {
+      bracketCount = 1
+    } else {
+      braceCount = 1
+    }
+    
+    for (let i = startIndex + startPattern.length; i < content.length; i++) {
       const char = content[i]
       
       if (escapeNext) {
@@ -97,19 +106,47 @@ export async function POST(request: NextRequest) {
         continue
       }
       
-      if (char === '"' && !escapeNext) {
-        inString = !inString
+      // 문자열 처리 (싱글쿼트와 더블쿼트 모두)
+      if (!inString && (char === '"' || char === "'" || char === '`')) {
+        inString = true
+        stringChar = char
+        continue
+      } else if (inString && char === stringChar && !escapeNext) {
+        inString = false
+        stringChar = ''
         continue
       }
       
       if (!inString) {
-        if (char === openChar || char === '{') {  // 객체 내부에 중괄호도 카운트
-          braceCount++
-        } else if (char === closeChar || (char === '}' && openChar === '[')) {  // 배열 내부의 객체도 처리
-          braceCount--
-          if (braceCount === 0 && char === closeChar) {
-            endIndex = i
-            break
+        if (isArray) {
+          // 배열인 경우
+          if (char === '[') {
+            bracketCount++
+          } else if (char === ']') {
+            bracketCount--
+            if (bracketCount === 0) {
+              endIndex = i
+              break
+            }
+          } else if (char === '{') {
+            braceCount++
+          } else if (char === '}') {
+            braceCount--
+          }
+        } else {
+          // 객체인 경우
+          if (char === '{') {
+            braceCount++
+          } else if (char === '}') {
+            braceCount--
+            if (braceCount === 0) {
+              endIndex = i
+              break
+            }
+          } else if (char === '[') {
+            bracketCount++
+          } else if (char === ']') {
+            bracketCount--
           }
         }
       }

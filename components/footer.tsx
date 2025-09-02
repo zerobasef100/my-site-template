@@ -22,42 +22,22 @@ export function Footer() {
 
   // 기본 데이터
   const defaultInfo = {
-    // 🎯 푸터 표시 여부
-    showFooter: true,  // false로 하면 푸터 전체가 안 보임
-    
-    // 👤 왼쪽 섹션 - 이름과 소개
-    name: "당신의 이름",  // 이름 (빈 문자열이면 섹션 숨김)
-    description: "당신을 소개하는 짧은 문구를 작성해주세요.",  // 짧은 소개
-    
-    // 🔗 빠른 링크 섹션
-    showQuickLinks: true,  // false면 빠른 링크 섹션 숨김
+    showFooter: true,
+    name: "당신의 이름",
+    description: "당신을 소개하는 짧은 문구를 작성해주세요.",
+    showQuickLinks: true,
     quickLinksTitle: "빠른 링크",
-    
-    // 📞 연락처 정보 (빈 문자열이면 해당 항목 숨김)
-    showContactInfo: true,  // false면 연락처 섹션 전체 숨김
+    showContactInfo: true,
     contactTitle: "연락처",
     phone: "010-0000-0000",
     email: "your-email@example.com",
     location: "당신의 위치",
-    
-    // ©️ 카피라이트 (빈 문자열이면 기본값 사용)
-    copyright: "",  // 비우면 "© 2024 {name}. All rights reserved." 자동 생성
-    
-    // ❤️ Made with 메시지 (편집 불가)
-    showMadeWith: true,  // false면 숨김
-    madeWithLocation: "Mrbaeksang",  // 도시 이름을 Mrbaeksang으로 변경
-    
-    // 🎨 템플릿 제작자 정보 (편집 불가)
-    showTemplateCredit: true,  // false면 숨김
-    templateCreator: {
-      name: "백상",
-      youtube: "https://www.youtube.com/@Mrbaeksang95/videos",
-      website: "https://devcom.kr/",
-      email: "qortkdgus95@gmail.com"
-    },
-    
-    // ⬆️ 맨 위로 버튼
-    showScrollTop: true  // false면 맨 위로 버튼 숨김
+    copyright: "",
+    showMadeWith: true,
+    madeWithLocation: "Mrbaeksang",
+    showTemplateCredit: true,
+    templateCreator: {"name":"백상","youtube":"https://www.youtube.com/@Mrbaeksang95/videos","website":"https://devcom.kr/","email":"qortkdgus95@gmail.com"},
+    showScrollTop: true
   }
 
   const [footerInfo, setFooterInfo] = useState(defaultInfo)
