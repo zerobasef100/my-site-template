@@ -30,7 +30,7 @@ export function EditableBackground({
   className = '',
   children
 }: EditableBackgroundProps) {
-  const { isEditMode, saveData, getData, saveToFile } = useInlineEditor()
+  const { isEditMode, saveData, getData } = useInlineEditor()
   const [showSettings, setShowSettings] = useState(false)
   const [backgroundType, setBackgroundType] = useState<'image' | 'video' | 'color'>(
     video ? 'video' : 'image'  // 기본값을 항상 'image'로 설정
@@ -150,24 +150,12 @@ export function EditableBackground({
       }
     }
     
+    // onChange 콜백으로 부모 컴포넌트에 알림 (부모에서 파일 저장 처리)
     onChange(data)
+    
+    // localStorage에만 저장
     if (storageKey) {
       saveData(storageKey, data)
-      
-      // 실제 파일에도 저장 (배경 데이터를 포함한 전체 섹션 데이터 저장)
-      // storageKey 형식: "hero-background", "about-background" 등
-      const componentName = storageKey.replace('-background', '')
-      if (componentName && ['hero', 'about', 'projects', 'contact'].includes(componentName)) {
-        // 해당 컴포넌트의 전체 정보 가져오기
-        const fullData = getData(`${componentName}-info`) || {}
-        const updatedData = {
-          ...fullData,
-          background: data
-        }
-        
-        // 파일에 저장
-        await saveToFile(componentName, 'Info', updatedData)
-      }
     }
   }
 

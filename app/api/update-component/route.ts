@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       const contentArray = Object.entries(data).map(([key, value]) => {
       // header 컴포넌트의 items 처리 - 아이콘을 문자열로 변환
       if (component === 'header' && key === 'items' && Array.isArray(value)) {
-        const itemsWithStringIcons = value.map((item: any) => ({
+        const itemsWithStringIcons = value.map((item: { icon?: unknown; [key: string]: unknown }) => ({
           ...item,
           icon: typeof item.icon === 'string' ? item.icon : "Home"
         }))

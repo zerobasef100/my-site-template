@@ -43,7 +43,7 @@ export function Projects() {
   
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
-    const savedData = getData('projects-info') as any
+    const savedData = getData('projects-info') as typeof defaultInfo | null
     if (savedData) {
       const mergedData = { ...defaultInfo, ...savedData }
       setProjectsInfo(mergedData)

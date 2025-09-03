@@ -71,7 +71,7 @@ export function Contact() {
   
   // localStorage에서 데이터 로드
   useEffect(() => {
-    const savedData = getData('contact-info') as any
+    const savedData = getData('contact-info') as typeof defaultInfo | null
     if (savedData) {
       setContactInfo({ ...defaultInfo, ...savedData })
       // background 데이터가 있으면 설정

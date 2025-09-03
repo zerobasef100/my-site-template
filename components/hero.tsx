@@ -60,7 +60,7 @@ export function Hero() {
 
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
-    const savedData = getData('hero-info') as any
+    const savedData = getData('hero-info') as typeof defaultInfo | null
     if (savedData) {
       setHeroInfo({ ...defaultInfo, ...savedData })
       // background 데이터가 있으면 설정
