@@ -26,6 +26,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploaded files (commented out to include images in git)
-# /public/uploads/*
-# !/public/uploads/.gitkeep
+# uploaded files (사용자가 업로드한 파일은 제외)
+/public/uploads/*
+!/public/uploads/.gitkeep

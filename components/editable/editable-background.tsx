@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useInlineEditor } from '@/contexts/inline-editor-context'
-import { Upload, Image, Video, Palette, Settings } from 'lucide-react'
+import { Upload, Image as ImageIcon, Video, Palette, Settings } from 'lucide-react'
 
 interface EditableBackgroundProps {
   image?: string
@@ -236,7 +236,7 @@ export function EditableBackground({
                   backgroundType === 'image' ? 'bg-primary text-primary-foreground' : ''
                 }`}
               >
-                <Image className="h-5 w-5" />
+                <ImageIcon className="h-5 w-5" />
                 <span className="text-xs">이미지</span>
               </button>
               <button
