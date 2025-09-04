@@ -405,7 +405,22 @@ export function Projects() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">새 프로젝트 추가</h3>
               <button
-                onClick={() => setShowProjectModal(false)}
+                onClick={async () => {
+                  // 업로드된 이미지가 있으면 삭제
+                  if (newProject.image && newProject.image.includes('/uploads/')) {
+                    try {
+                      await fetch('/api/delete-image', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagePath: newProject.image })
+                      })
+                    } catch (error) {
+                      console.error('Failed to delete uploaded file:', error)
+                    }
+                  }
+                  setNewProject({ image: "", title: "", description: "" })
+                  setShowProjectModal(false)
+                }}
                 className="p-1 hover:bg-muted rounded-lg"
               >
                 <X className="h-5 w-5" />
@@ -561,7 +576,19 @@ export function Projects() {
                 추가
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // 업로드된 이미지가 있으면 삭제
+                  if (newProject.image && newProject.image.includes('/uploads/')) {
+                    try {
+                      await fetch('/api/delete-image', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imagePath: newProject.image })
+                      })
+                    } catch (error) {
+                      console.error('Failed to delete uploaded file:', error)
+                    }
+                  }
                   setNewProject({ image: "", title: "", description: "" })
                   setShowProjectModal(false)
                 }}

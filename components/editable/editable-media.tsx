@@ -122,7 +122,7 @@ export function EditableMedia({
   return (
     <>
       <div 
-        className="relative group"
+        className="relative group w-full h-full"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
