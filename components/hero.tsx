@@ -45,13 +45,13 @@ export function Hero() {
     projectButton: "프로젝트 보기"
   }
 
+  const [backgroundData, setBackgroundData] = useState(
+    defaultInfo.background
+  )
   const [heroInfo, setHeroInfo] = useState(defaultInfo)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
   const [showSocialEditor, setShowSocialEditor] = useState(false)
   const [showIconPicker, setShowIconPicker] = useState<number | null>(null)
-  const [backgroundData, setBackgroundData] = useState(
-    defaultInfo.background
-  )
 
   // localStorage에서 데이터 로드 - 편집 모드가 변경될 때마다 실행
   useEffect(() => {
@@ -76,7 +76,12 @@ export function Hero() {
   }, [isEditMode]) // isEditMode가 변경될 때마다 데이터 다시 로드
 
   const updateHeroInfo = (key: string, value: string) => {
-    const newInfo = { ...heroInfo, [key]: value }
+    // background 필드를 유지하면서 업데이트
+    const newInfo = { 
+      ...heroInfo, 
+      [key]: value,
+      background: heroInfo.background || backgroundData 
+    }
     setHeroInfo(newInfo)
     saveData('hero-info', newInfo)
   }
