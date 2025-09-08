@@ -279,9 +279,9 @@ export function Contact() {
                     <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center group-hover:bg-green-500/20">
                       <Phone className="h-5 w-5 text-green-600" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-muted-foreground">전화</p>
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {contactInfo.phone}
                       </p>
                     </div>
@@ -299,7 +299,7 @@ export function Contact() {
                     <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center group-hover:bg-blue-500/20">
                       <Mail className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-muted-foreground">이메일</p>
                       <p className="text-sm font-medium text-foreground truncate">
                         {contactInfo.email}
@@ -315,9 +315,9 @@ export function Contact() {
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                     <MapPin className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground">위치</p>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-medium text-foreground truncate">
                         {contactInfo.location}
                     </p>
                   </div>
@@ -330,9 +330,9 @@ export function Contact() {
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                     <Clock className="h-5 w-5 text-primary" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground">업무시간</p>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-medium text-foreground truncate">
                         {contactInfo.workTime}
                     </p>
                   </div>

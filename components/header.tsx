@@ -181,7 +181,7 @@ export function Header() {
       
       {/* Theme Toggle - Fixed Position */}
       {navConfig.showThemeToggle && (
-        <div className="fixed top-6 right-6 z-50">
+        <div className="fixed top-20 right-6 md:top-6 md:right-6 z-50">
           <ThemeToggle />
         </div>
       )}

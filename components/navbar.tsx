@@ -79,10 +79,8 @@ export function NavBar({ items, className, logo, logoImage, isEditMode, onEditMe
     <div
       className={cn(
         // 🎯 네비게이션 바 위치 설정
-        // 모바일: bottom-6 (하단)
-        // 데스크톱: md:top-6 (상단)
-        // 변경 예시: "fixed top-6" (항상 상단)
-        "fixed bottom-6 md:bottom-auto md:top-6 left-1/2 -translate-x-1/2 z-50",
+        // 모바일과 데스크톱 모두 상단에 고정
+        "fixed top-6 left-1/2 -translate-x-1/2 z-50",
         className,
       )}
     >
