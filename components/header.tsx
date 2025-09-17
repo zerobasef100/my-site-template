@@ -27,7 +27,7 @@ export function Header() {
   const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
   // 기본 데이터 (파일에는 문자열로 저장되지만 여기서는 컴포넌트로 변환)
   const defaultConfig = {
-    logo: "Portfolio",
+    logo: "포트폴리오",
     logoImage: "",
     showNavBar: true,
     showThemeToggle: true,
