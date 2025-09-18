@@ -23,17 +23,18 @@ const ICON_MAP = {
   Rocket
 }
 
-export function Header() {
-  const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
-  // 기본 데이터 (파일에는 문자열로 저장되지만 여기서는 컴포넌트로 변환)
-  const defaultConfig = {
-    logo: "Portfolio",
+// 기본 데이터 (파일에는 문자열로 저장되지만 여기서는 컴포넌트로 변환)
+export const defaultConfig = {
+    logo: "포트폴리오",
     logoImage: "",
     showNavBar: true,
     showThemeToggle: true,
-    items: [{"name":"홈","url":"#hero","icon":"Home","show":true},{"name":"소개","url":"#about","icon":"User","show":true},{"name":"프로젝트","url":"#projects","icon":"Briefcase","show":true},{"name":"연락처","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
+    items: [{"name":"Home","url":"#hero","icon":"Home","show":true},{"name":"About","url":"#about","icon":"User","show":true},{"name":"Projects","url":"#projects","icon":"Briefcase","show":true},{"name":"Contact","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
     siteTitle: "나의 포트폴리오"
   }
+
+export function Header() {
+  const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
   
   // defaultConfig의 아이콘을 컴포넌트로 변환한 상태로 초기화
   const [navConfig, setNavConfig] = useState({
@@ -46,12 +47,12 @@ export function Header() {
     }))
   })
   const [showEditModal, setShowEditModal] = useState(false)
-  const [siteTitle, setSiteTitle] = useState('나의 포트폴리오')
+  const [siteTitle, setSiteTitle] = useState(defaultConfig.siteTitle)
   
   // localStorage에서 데이터 로드
   useEffect(() => {
-    // 사이트 제목 복원
-    const savedTitle = getData('site-title') as string | null
+    // 사이트 제목 복원 - site-title.tsx와 같은 키 사용
+    const savedTitle = localStorage.getItem('portfolio-site-title')
     if (savedTitle) {
       setSiteTitle(savedTitle)
       document.title = savedTitle
@@ -99,7 +100,7 @@ export function Header() {
     if (key === 'siteTitle' && typeof value === 'string') {
       setSiteTitle(value)
       document.title = value
-      saveData('site-title', value)
+      localStorage.setItem('portfolio-site-title', value)
     }
     
     // 저장할 때 아이콘을 문자열로 변환
@@ -201,7 +202,11 @@ export function Header() {
                   <input
                     type="text"
                     value={siteTitle}
-                    onChange={(e) => updateNavConfig('siteTitle', e.target.value)}
+                    onChange={(e) => {
+                      setSiteTitle(e.target.value)
+                      document.title = e.target.value
+                      updateNavConfig('siteTitle', e.target.value)
+                    }}
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="나의 포트폴리오"
                   />
@@ -259,20 +264,22 @@ export function Header() {
                   // 아이콘을 문자열로 변환한 설정 객체 생성
                   const configToSave = {
                     ...navConfig,
+                    siteTitle: siteTitle, // 실제 입력된 siteTitle 변수 사용
                     items: navConfig.items.map((item) => ({
                       ...item,
-                      icon: typeof item.icon === 'string' 
-                        ? item.icon 
+                      icon: typeof item.icon === 'string'
+                        ? item.icon
                         : Object.keys(ICON_MAP).find(key => ICON_MAP[key as keyof typeof ICON_MAP] === item.icon) || 'Home'
                     }))
                   }
-                  
-                  // header의 defaultConfig 전체를 파일에 저장
+
+                  // 다른 컴포넌트들처럼 간단하게 한 번에 저장
                   const success = await saveToFile('header', 'Config', configToSave)
-                  
+
                   if (success) {
                     saveData('nav-config', configToSave)
-                    saveData('site-title', siteTitle)
+                    localStorage.setItem('portfolio-site-title', siteTitle)
+                    document.title = siteTitle // 저장 후 document.title 다시 설정
                     alert('✅ 네비게이션 설정이 파일에 저장되었습니다!')
                     setShowEditModal(false)
                   } else {

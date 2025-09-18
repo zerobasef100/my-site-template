@@ -3,11 +3,14 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { InlineEditorProvider } from "@/contexts/inline-editor-context"
 import { SiteTitle } from "@/components/site-title"
+import { getMetadata } from "@/lib/metadata"
 import "./globals.css"
+
+const metadataInfo = getMetadata()
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: "나의 포트폴리오",
+  title: metadataInfo.siteTitle,
   description: "창의적인 아이디어로 웹 경험을 디자인합니다.",
   keywords: ["포트폴리오", "개발자", "프론트엔드", "웹개발"],
   authors: [{ name: "당신의 이름" }],
