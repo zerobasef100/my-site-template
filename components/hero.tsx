@@ -37,11 +37,11 @@ export function Hero() {
   
   const defaultInfo = {
     greeting: "안녕하세요,",
-    name: "당신의 이름",
-    title: "프론트엔드 개발자",
-    description: "창의적인 아이디어로 웹 경험을 디자인합니다.",
-    profileImage: "",
-    background: {"image":"","video":"","color":"","opacity":0.1},
+    name: "이진우",
+    title: "조경설계 및 엔지니어링",
+    description: "창의적인 아이디어와 능동적 태도로 임하는",
+    profileImage: "/uploads/hero-profile-1758204156612.jpg",
+    background: {"image":"","video":"","color":"#bdcaff","opacity":0.3},
     projectButton: "프로젝트 보기"
   }
 

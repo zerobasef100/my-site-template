@@ -25,13 +25,13 @@ const ICON_MAP = {
 
 // 기본 데이터 (파일에는 문자열로 저장되지만 여기서는 컴포넌트로 변환)
 export const defaultConfig = {
-  logo: "포트폴리오",
-  logoImage: "",
-  showNavBar: true,
-  showThemeToggle: true,
-  items: [{"name":"Home","url":"#hero","icon":"Home","show":true},{"name":"About","url":"#about","icon":"User","show":true},{"name":"Projects","url":"#projects","icon":"Briefcase","show":true},{"name":"Contact","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
-  siteTitle: "나의 포트폴리오"
-}
+    logo: "Portfolio",
+    logoImage: "",
+    showNavBar: true,
+    showThemeToggle: true,
+    items: [{"name":"Home","url":"#hero","icon":"Home","show":true},{"name":"About","url":"#about","icon":"User","show":true},{"name":"Projects","url":"#projects","icon":"Briefcase","show":true},{"name":"Contact","url":"#contact","icon":"Mail","show":true},{"name":"갤러리","url":"#gallery","icon":"Camera","show":false},{"name":"블로그","url":"#blog","icon":"Book","show":false}],
+    siteTitle: "이진우의 포트폴리오"
+  }
 
 export function Header() {
   const { getData, saveData, isEditMode, saveToFile, saveFieldToFile } = useInlineEditor()
